@@ -2,11 +2,10 @@
  *  /|o|\      (c) 2015
  *  =====
  */
-#ifndef _SLAVE_INTERFACE_H_
-#define _SLAVE_INTERFACE_H_
+#ifndef SLAVE_INTERFACE_H
+#define SLAVE_INTERFACE_H
 
-#include <stdint.h>
-#include "data.h"
+#include "coordinator_data.h"
 
 typedef enum {
     SLAVE_DATA,
@@ -22,4 +21,4 @@ int slave_init(slave_serialize_cb_t serialize_cb,
   slave_deserialize_cb_t deserialize_cb);
 int slave_update(data_t *command, data_t *answer);
 
-#endif/*_SLAVE_INTERFACE_H_*/
+#endif/*SLAVE_INTERFACE_H*/

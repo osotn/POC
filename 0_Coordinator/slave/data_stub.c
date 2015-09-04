@@ -1,4 +1,4 @@
-/*   _^_   Smart_Home project  
+/*   _^_   Smart_Home project
  *  /|o|\      (c) 2015
  *  =====
  */
@@ -9,11 +9,11 @@
 
 slave_event_t slave_serialize(data_t *data, uint8_t *pkg)
 {
-  printf("Slave Serialize: data = %p\n", data);
+  printf("Slave Serialize: data = %p\n", pkg);
 
   /* Change pkg */
 
-  printf("Slave Serialize: pkg = %p\n", pkg);
+  printf("Slave Serialize: pkg = %p\n", data);
 
   return SLAVE_DATA;
 }   
@@ -26,5 +26,5 @@ slave_event_t slave_deserialize(data_t *data, uint8_t *pkg)
 
   printf("Slave Deserialize: pkg = %p\n", pkg);
 
-  return SLAVE_DATA;  
+  return SLAVE_DATA;
 }

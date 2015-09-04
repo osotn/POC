@@ -2,14 +2,12 @@
  *  /|o|\      (c) 2015
  *  =====
  */
-#ifndef _SERVER_DATA_H_
-#define _SERVER_DATA_H_
+#ifndef SERVER_DATA_H
+#define SERVER_DATA_H
 
 #include "server_interface.h"
 
-server_event_t server_serialize(data_t *data, char *script_str,
-  int *str_size);   
-server_event_t server_deserialize(data_t *data, char *script_str,
-  int *str_size);   
+server_event_t server_serialize(data_t *data, char *script_str, int *str_size);
+server_event_t server_deserialize(data_t *data, char *script_str, int *str_size);
 
-#endif/*_SERVER_DATA_H_*/
+#endif/*SERVER_DATA_H*/

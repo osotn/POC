@@ -1,9 +1,9 @@
-#   _^_   Smart_Home project  
+#   _^_   Smart_Home project
 #  /|o|\      (c) 2015
 #  =====
 
 CC=gcc
-TARGET=test
+TARGET=coordinator
 #CFLAGS=-g -Wall -Werror -o0
 CFLAGS=-g -o0
 HEADERS=coordinator.h server_interface.h slave_interface.h server_data.h \

@@ -3,12 +3,8 @@
  *  =====
  */
 
-#include <stdio.h>
-#include "server_interface.h"
 #include "server_data.h"
-#include "slave_interface.h"
 #include "slave_data.h"
-#include "data.h"
 
 static int handler(server_event_t event, data_t *command, data_t *answer)
 {

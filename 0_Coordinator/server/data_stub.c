@@ -1,4 +1,4 @@
-/*   _^_   Smart_Home project  
+/*   _^_   Smart_Home project
  *  /|o|\      (c) 2015
  *  =====
  */
@@ -21,11 +21,11 @@ server_event_t server_serialize(data_t *data, char *script_str,
 server_event_t server_deserialize(data_t *data, char *script_str,
   int *str_size)
 {
-  printf("Server Serialize: script = \"%s\"\n", script_str);
+  printf("Server Deserialize: script = \"%s\"\n", script_str);
   
   /* Change data */
  
-  printf("Server Serialize: data = %p\n", data);
+  printf("Server Deserialize: data = %p\n", data);
 
   return SERVER_DATA;
 }
