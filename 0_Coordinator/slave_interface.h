@@ -13,8 +13,8 @@ typedef enum {
 } slave_event_t;
 
 /* Callbacks */
-typedef slave_event_t(*slave_serialize_cb_t)(data_t *data, uint8_t *pkg);   
-typedef slave_event_t(*slave_deserialize_cb_t)(data_t *data, uint8_t *pkg);
+typedef slave_event_t(*slave_serialize_cb_t)(data_t *data, int8_t *pkg); 
+typedef slave_event_t(*slave_deserialize_cb_t)(data_t *data, int8_t *pkg);
 
 /* Methods */
 int slave_init(slave_serialize_cb_t serialize_cb,

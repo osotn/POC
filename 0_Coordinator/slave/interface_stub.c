@@ -20,7 +20,7 @@ int slave_init(slave_serialize_cb_t serialize_cb_,
 int slave_update(data_t *command, data_t *answer)
 {
   slave_event_t event;
-  uint8_t pkg[32];
+  int8_t pkg[32];
 
   printf("Slave Interface Stub: Send command = %p to slave\n", command);
   event = serialize_cb(command, pkg); 
