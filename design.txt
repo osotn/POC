@@ -1,0 +1,401 @@
+*   _^_   Smart_Home project 
+*  /|o|\      (c) 2015
+*  =====
+
+Smart_Home is a system to control different type of simple devices by the Web user interface. It is scalable and reliable solution, that allow build and configure automation system. Smart_Home doesn’t depend on the chosen HW architecture components and can be extended.
+ 
+1. System modules design
+========================
+
+Smart Home system modules design is illustrated on Fig. 1.1 with every component description below.
+
+.-------.                                               .-----------.
+|Slave 1| RF )))                                   |<-->| Client  1 |
+.-------.                                          |    .-----------.
+.-------.                  .--------.              |    .-----------.
+|Slave 2| RF )))    ((( RF | Master | <--LAN/WAN-->|<-->| Client  2 | 
+.-------.                  .--------.              |    .-----------.
+   ...                    Linux server             |        ...
+.-------.                                          |    .-----------.
+|Slave N| RF )))                                   |<-->| Client  N |
+.-------.                                               .-----------.
+
+              Figure 1.1 Smart_Home functional block schema  
+
+Slave is a microcontroller based device (such as ARM Cortex-M0), that handles commands from master via RF (or WiFi/Ethernet). The slave contains one or more actuators and/or sensors. E.g. Light switch, Dimmer, Thermostat, etc...
+
+Master is a Linux based embedded computer (server) that has “fast” LAN/WAN network interface (WiFi or Ethernet) for UI communication and “slow” slave-specific interface (RF via SPI, UART, etc) for communication with slaves.
+
+Client can be any computer/smartphone/tablet with TCP/IP network interface. The main interface to Master is Web (http) UI that based on CGI queries, e.g. http://192.168.1.10/cgi-bin/smart_home.py?dev=1&led_1=on.
+
+2. HW Level
+===========
+
+Slave HW is flexible. It MUST be compatible with Master HW interface. The example is illustrated on Fig. 2.1.
+                           .-------------------.
+                           |  STM32 Discovery  |
+                    .--.---.              .----.-------------------------.                  
+               (((  |RF|SPI|              |GPIO| Customer-specific board |
+                    .--.---.              .----.-------------------------.
+                           |     Cortex-M      |
+                           `-------------------`
+                                 | UART |
+                             .--------------.
+                             | CLI terminal |
+                             `--------------`
+Figure 2.1 Slave hardware example 
+
+
+Master HW is also can be chosen: PC, Laptop, RaspberryPI/BananaPi, WiFi router.
+It MUST support at least one interface to Client side and at least one to Slave side.
+Clients are connected to the Master via LAN/WAN network, not directly.
+  
+              .------------------.
+              |  Raspberry Pi    |
+           .--.---.          .---.----.
+      (((  |RF|SPI|          |USB|WiFi|
+           .--.---.          .---.----.
+              |                  |
+              `------------------`
+                                   or
+                                                    .---------------------.
+                                          STM32     |WiFi router with USB |
+                                       .------------.---.         .----.  |
+                                  (((  |RF-SPI-UART |USB|         |WiFi|  |
+                                       .------------.---.         .----.  |
+                                         Discovery  |             |Eth |  |
+                                                    `---------------------`
+Figure 2.2 Master hardware examples
+
+
+3. Network and addresses
+========================
+
+Interface: Master - Clients
+----------------------------
+
+Master as a Linux server is accessed by an IP address (private, e.g. 192.168.1.103, or public e.g. 22.15.253.121) or/and by the hostname.
+
+Q: What’s about hostname in local network? Conflict Linux/Windows hostnames.
+A: Hostname can be configured on local DNS or on the client side (e.g. /etc/hosts)
+
+                                                  .-------.
+     .--------.                                   |User PC|
+     | Master |  HTTP                             .-------.
+     |     .--------------.          LAN  /  WAN      | 
+     |     | IP interface |<--------.--<router>-------.--- Internet 
+     |     .--------------.         |   
+     |        |                 .-------.
+     .--------.                 |User PC|
+                                .-------.
+                 Figure 3.1 Master - User PCs Network                     
+
+
+Master opens HTTP (80) port as UI or plain-cgi-queries to Smart_Home. There is running Web server (e.g. Apache) with enabled cgi.
+
+For configuration and debug purposes master also can open others ports, such as SSH (22), FTP and etc.
+
+
+Interface: Slaves - Master
+--------------------------
+Slave as a small device is accessed by Slave address that has at least 4 bytes. Slave address is a similar to IP address, we also can represent it in “dot” human-readable form “xxx.xxx.xxx.xxx”.
+
+See Fig. 3.2.
+
+
+
+
+
+.--------------------.
+| Room N 1 (kitchen) |
+| .-------. 1.1.0.1  |
+| |Slave 1| )))      |
+| .-------.          | 
+| .-------. 1.1.0.2  |            Addr:      1.0.0.1
+| |Slave 2| )))      |            .---------.
+| .-------.          |       (((  |  Master |
+|    ...             |            .---------.
+.--------------------.            Netmask: 255.0.0.0.
+.--------------------.
+| Room N 2           |
+| .-------. 1.2.0.1  |
+| |Slave 1| )))      |
+| .-------.          | 
+|    ...             |
+.--------------------.
+           ...   
+                   Figure 3.2 Slaves - Master Network  
+
+
+For example, we can assigned Slave address according with next rules:
+
+                 Slave addr:   1.xxx.xxx.xxx
+                             --- --- --- ---                         
+                                  |   |   |
+                 home id ---------.   |   |
+                 room id -------------.   |
+                 device id ---------------.
+                   
+
+
+4. SW Level
+===========
+Slave
+    .---------------------.     .-------------.     .--------------------.
+    |   Handler           | <-> |   Modules   | <-> |   HW drivers        |
+    |                     |     | Keyboard,   |     | GPIO,UART, SPI, ... |
+    | !!device specific!! |     | Switch, ... |     | !!Vendor specific!! |
+     ---------------------       -------------       ---------------------
+          |                            |
+.--------------------------------------------.
+|                 Database                   |
+.--------------------------------------------.
+           Figure 4.1 Slave SW block schema
+There are different Handlers for different type of slaves. Handler define the slave options structure and its internal logic. TODO: Do LL design
+
+Master
+Master SW level consists from the web-server, cgi script sharmhome.py, the coordinator (daemon) and slave drivers.
+The data flow within one session is following:
+Web server to script: cgi?dev=kitchen_led&left=on
+Script to the Coordinator “kitchen_led left=on”
+Coordinator (based on cfg.xml) to slave “1.1.0.1 “ > “x x x 1 x x 0” (x - previous state from the data.xml)
+Slave “1.1.0.1” to the Coordinator “x x x 1 y y 0” (x -confirm request, y - new data from sensor)
+Coordinator update data.xml
+Coordinator to script >  “left=on” or “Error: Timeout”
+Script update UI page.
+   
+  LAN/WAN   ------    .------------.      .-----------.    ||   net socks
+  ________/  web   \__| cgi script |  UDP |    The    |<-->|| datagram msgs 
+          \ server /  |smarthome.py|<---->|Coordinator|    ||    .---------.
+            ------    .------------.      .-----------.    ||<---|slave drv|
+                                            |ro    |r/w    ||    .---------.
+                                            |      |
+                                       -------   --------        
+                                      (cfg.xml) (data.xml)
+                                       -------   --------
+                     Figure 4.2 Master SW block schema     
+
+If data.xml is absent (or empty) then the Coordinator create data.xml based on default option values from conf.xml.
+The Coordinator
+===============
+
+Coordinator is implemented on C language and run on the Master. It is a daemon that convert data by interfaces API, transmits data between web-server scripts and slave drivers (via UDP sockets and network<>RF converter if needed) and updates data.xml.
+
+Object model
+------------  
+                             .-------------.
+            .--inject-calls--| Coordinator |--inject-calls-.
+            |                .-------------.               |
+            V                                              V
+     .-------------.           .--------.           .------------.
+     | Server-side |---call--->| Handle |---call--->| Slave-side |
+     |  Interface  |           .--------.           |  Interface |
+     .-------------.                                .------------.
+            |         .-----------.  .-----------.         |
+            .--call-->|Server-data|  |Slave-data |<--call--.
+                      |Serializing|  |Serializing|
+                      .-----------.  .-----------.
+                          |    .--------.   |
+                          .--> |  data  |<--.
+                               .--------.
+Data model
+----------
+                                  
+       UDP txt  .-----------.  .---.       .-.   .-----------.  UDP data
+     .--------->|  Serialize|--| + |------>|H|-->|Deserialize|--------->. 
+Start|          .-----------.  .---.       |A|   .-----------.          |
+.------.              |r         |r        |N|                      .---------. 
+|script|          (cfg.xml)    (data.xml)  |D|                      |slave drv|      
+.------.              |r               |w  |L|                      .---------.
+ End |        .-----------.    .---.   |   |E|   .-----------.          | 
+     <--------|Deserialize|<---| - |<--.---| |<--|  Serialize|<---------.
+              .-----------.    .---.       .-.   .-----------. 
+                                         
+                                          
+
+
+Process model
+-------------
+The coordinator receives UDP packet with the text message from the server scripts by one and handles it by sending UDP data package to slave. Then the coordinator are waiting for the answer from the slave without handling any new messages from any scripts. After received the answer or occurred timeout the coordinator sends answer back to the script and only after that it will be ready to handle next message from the that or other script. The coordinator is one process (and one thread) and synchronic program.  
+
+Server-side Interface
+------------------------
+        .-------------.
+        | Server-side |--- Handle callback
+        |  Interface  |--- Serialize callback
+        |             |--- Deserialize callback
+        .-------------.
+
+  struct server_interface {
+    int handle_cb(event_t event, dev_t *config, cb_t cb);
+    int serialize_cb (config_t *config, char *msg, int size);   
+    int deserialize_cb (void *msg, int size, dev_t *config);
+  };
+    
+  #define OPTS_NUM 7
+  struct dev_t {
+    int addr;
+    option_t opts[OPTS_NUM];
+  };
+  struct option_t {
+    char str_name[100];  //- used to parse cfg.xml
+    char str_value[100]; //- used to parse cfg.xml
+    int value;           //- used by slave interface
+  };
+
+Serialize means translate text as “dev=kitchen_led left=on” based on cfg.xml to “1.1.0.1 3 1” text and Deserialize is vice versa.
+
+
+
+XML file format:
+
+config.xml
+------------------
+xml config - define devices and their options by administrator.
+
+Format:
+<devices>
+  <device name=kitchen_light_switch, ip=1.1.0.10 >
+    <opt name=main_light id=1 default_value=off> <values on=1 off=0  /> </opt>
+    ...
+  </device>
+  ...
+</devices>
+
+data.xml
+--------
+xml data - used and updated by the coordinator
+<slaves>
+  <slave ip = 1.1.1.12 status = [Req/Rep/Timeot]>
+    <opt> val=1 </opt>
+    …
+  </slave>
+  …
+</slaves>
+
+Slave-side Interface
+------------------------
+                           .------------.
+    SendToSlave function---| Slave-side |
+                           | Interface  |--- Serialize callback
+                           |            |--- Deserialize callback       
+                           .------------.
+
+  struct slave_interface {
+    int send_to_slave(dev_t *config, cb_t answer_cb);
+    int serialize_cb (dev_t *config, void *data, int size);   
+    int deserialize_cb (void *data, int size, dev_t *config);
+  };
+
+Deserialize means translate text as “1.1.0.1 1 3 4 4” to data package struct dev_t (see below) and Serialize is vice versa.
+
+Slave device has a set of parameters, e.g. 8 parameters per unit (4 bytes each). So the message size is 32 bytes and can be transmit without chunking.
+Master:                 Slave addr 1, type: switch:
+struct slave {          struct data {          
+  int32_t opt[8];          int32_t leds[8];
+}                       }
+
+NOTE: opt type is 32 bits signed in network format (big-endian byte order). 
+
+For each type of device meaning of parameters CAN be unique and configured in slave SW on the Slave side and in the config.xml file on the Master side.
+
+Coordinator sends UDP packet with payload. RF master receives it via physical interface, parse it and form a radio packet (see below). Handles respond with same logic. Transmission is blocking.
+
+For example for RF (nRF24L01) module:
+  DST_IP -> DST_NODE
+  SRC_IP -> saved to write an answer
+  //PORT -> RF_CHAN ? // can skip now, because it is fixed
+  DATA  -> DATA
+  CRC - skip, radio add it automatically
+
+
+Project Management
+==================
+
+Tasks
+-----
+Implement The Coordinator framework (handler + 2 interfaces)
+Implement + UnitTest module that handles config file (or files) based on inotify as the interface of Coordinator framework
+Implement + UnitTest module that send/receive config to slave driver via network sockets (UDP packets) as the interface of Coordinator framework 
+Demo testbench with the coordinator and stub web-script that changes config file and stub slave-driver that only print messages in terminal.
+
+Milestones
+---------
+System design document
+Implementation of The Coordinator (including UnitTest)
+Testbench of Master (simple web-scripts - The Coordinator - stub slave driver)
+…
+Testbench Smart-Home (master - slaves)
+…
+Release 0.1 Smart-Home
+
+
+
+
+
+
+
+
+
+
+
+
+Discussing points
+=================
+
+File and functions.
+
+
+
+Task 1  Implement The Coordinator framework (handler + 2 interfaces)
+====================================================================
+
+1.1 Coordinator structure and logic:
+
+File and functions structure should be defined here.
+Logic is verified by print messages.:
+
+Initialization of Server-Interface
+Running of Server-Interface
+
+Notify: file changed
+Fill in config list
+0. Handle
+DAEMON send msg
+DAEMON recieve answer
+serialize
+
+?? !Done
+TODO: XXX - need to discuss.
+========================
+2. Serialize/deserialize.
+
+Read and write xml config.
+
+Print a config line.
+Write changed config line.
+
+!Done
+XXX - test scripts, reimplement in python.
+
+========================
+
+3. Config data.
+
+Parse config line to structure and back.
+========================
+
+4. Server side.
+
+Script Send a msg and write back the answer. 
+
+==========================
+
+6. Slave interface.
+
+Send and recieve UDP packet.
+
+==========================
+
+7. 
+
