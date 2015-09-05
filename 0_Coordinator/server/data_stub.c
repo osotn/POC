@@ -13,6 +13,7 @@ server_event_t server_serialize(data_t *data, char *script_str,
   printf("Server Serialize: data = %p\n", data);
 
   strcpy(script_str, "==answer from slave to server==");
+
   printf("Server Serialize: script = \"%s\"\n", script_str);
 
   return SERVER_DATA;

@@ -22,11 +22,11 @@ int server_run(server_handle_cb_t handle_cb, server_serialize_cb_t serialize_cb,
 
         printf("%d. Server_interface Stub: Received cmd from server:\n", i++);
         printf("\t cmd = \"%s\"\n", cmd_script_str);
-        event = serialize_cb(&cmd, cmd_script_str, 0);
+        event = deserialize_cb(&cmd, cmd_script_str, 0);
 
         handle_cb(event, &cmd, &answer);
 
-        event = deserialize_cb(&answer, answer_script_str, &size);
+        event = serialize_cb(&answer, answer_script_str, &size);
         printf("Server_interface Stub: Received answer to server:\n");
         printf("\t answer = \"%s\"\n", answer_script_str);
 
