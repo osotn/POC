@@ -13,10 +13,10 @@
 #include <unistd.h>
 #include "../slave_interface.h"
 
-slave_serialize_cb_t serialize_cb;
-slave_deserialize_cb_t deserialize_cb;
+static slave_serialize_cb_t serialize_cb;
+static slave_deserialize_cb_t deserialize_cb;
 
-#define PKG_LEN OPTIONS_NUM * sizeof(int32_t)
+#define PKG_LEN (OPTIONS_NUM * sizeof(int32_t))
 
 slave_event_t slave_update(data_t *command, data_t *answer)
 {
@@ -32,8 +32,8 @@ slave_event_t slave_update(data_t *command, data_t *answer)
 #endif
     };
     int8_t pkg[PKG_LEN] = {};
-    int32_t len = PKG_LEN, addr_len = sizeof(struct sockaddr_in);
-    int32_t sockfd;
+    int len = PKG_LEN, addr_len = sizeof(struct sockaddr_in);
+    int sockfd;
     
     if (!serialize_cb || !deserialize_cb)
         return SLAVE_INIT_ERROR;
@@ -41,7 +41,7 @@ slave_event_t slave_update(data_t *command, data_t *answer)
     if ((sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
     {
         perror("\n Error : Could not create socket \n");
-        return SLAVE_NETW_ERROR;
+        return SLAVE_NETWORK_ERROR;
     }
 
     if (serialize_cb(command, pkg, &dev_addr) != SLAVE_DATA)
@@ -52,20 +52,20 @@ slave_event_t slave_update(data_t *command, data_t *answer)
         (struct sockaddr *)&dev_addr, addr_len)) < 0)
     {
         perror("send");
-        return SLAVE_NETW_ERROR;
+        return SLAVE_NETWORK_ERROR;
     }
     
     if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0)
     {
         perror("Error");
-        return SLAVE_NETW_ERROR;
+        return SLAVE_NETWORK_ERROR;
     }
 
     if ((len = recvfrom(sockfd, pkg, sizeof(pkg), 0,
         (struct sockaddr *)&dev_addr, (socklen_t *)&addr_len)) <= 0)
     {
         perror("recv");
-        return SLAVE_TIME_ERROR;
+        return SLAVE_TIMEOUT_ERROR;
     }
     
     printf("Slave Interface Stub: Recv answer = '%s' from slave\n", pkg);
