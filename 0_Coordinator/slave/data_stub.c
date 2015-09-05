@@ -10,8 +10,8 @@
 /* Serialize: "data" to "pkg" */
 slave_event_t slave_serialize(data_t *data, int8_t *pkg, struct sockaddr_in *addr)
 {
+    int i;
     size_t opt_value_size = sizeof(data->opts->value);
-    uint32_t i;
 
     printf("Slave Serialize: data = %p\n", data);
 
@@ -32,8 +32,8 @@ slave_event_t slave_serialize(data_t *data, int8_t *pkg, struct sockaddr_in *add
 /* Deserialize: "pkg" to "data" */
 slave_event_t slave_deserialize(data_t *data, int8_t *pkg, struct sockaddr_in *addr)
 {
+    int i;
     size_t opt_value_size = sizeof(data->opts->value);
-    uint32_t i;
 
     printf("Slave Deserialize: data = %p\n", data);
     

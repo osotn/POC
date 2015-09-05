@@ -12,7 +12,7 @@ int server_run(server_handle_cb_t handle_cb, server_serialize_cb_t serialize_cb,
 {
     int i = 0;
     struct sockaddr_in client_addr = {},
-    serv_addr = {ncat -vv localhost port -u
+    serv_addr = {/* To test: ncat -vv localhost port -u*/
         .sin_family = AF_INET,
         .sin_port = htons(4000),
         .sin_addr.s_addr = htonl(INADDR_LOOPBACK)
@@ -25,6 +25,7 @@ int server_run(server_handle_cb_t handle_cb, server_serialize_cb_t serialize_cb,
         return -1;
     }
 
+    /* TODO We do really need reusable address ? */ 
     if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)))
     {
         perror("Error");
