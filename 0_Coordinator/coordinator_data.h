@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#define OPTIONS_NUM 8
+
 typedef struct data_opt_t
 {
   char name[100];
@@ -18,7 +20,7 @@ typedef struct data_t
 {
   char dev_name[100];
   uint32_t dev_addr;
-  data_opt_t opts[8];
+  data_opt_t opts[OPTIONS_NUM];
 } data_t;
 
 #endif/*COORDINATOR_DATA_H*/

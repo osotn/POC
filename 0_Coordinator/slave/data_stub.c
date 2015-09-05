@@ -7,24 +7,28 @@
 #include <string.h>
 #include "../slave_data.h"
 
-slave_event_t slave_serialize(data_t *data, uint8_t *pkg)
+slave_event_t slave_serialize(data_t *data, int8_t *pkg)
 {
-  printf("Slave Serialize: data = %p\n", pkg);
+    printf("Slave Serialize: data = %p\n", pkg);
 
-  /* Change pkg */
+    /* Change pkg */
+    
+    // XXX Test message
+    char *test = "==== Test message ====";
+    strcpy(pkg, test);
+    
+    printf("Slave Serialize: pkg = %p\n", data);
 
-  printf("Slave Serialize: pkg = %p\n", data);
-
-  return SLAVE_DATA;
+    return SLAVE_DATA;
 }   
 
-slave_event_t slave_deserialize(data_t *data, uint8_t *pkg)
+slave_event_t slave_deserialize(data_t *data, int8_t *pkg)
 {
-  printf("Slave Deserialize: data = %p\n", data);
+    printf("Slave Deserialize: data = %p\n", data);
 
-  /* Change data */
+    /* Change data */
 
-  printf("Slave Deserialize: pkg = %p\n", pkg);
+    printf("Slave Deserialize: pkg = %p\n", pkg);
 
-  return SLAVE_DATA;
+    return SLAVE_DATA;
 }
