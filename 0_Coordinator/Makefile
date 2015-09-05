@@ -18,4 +18,4 @@ $(TARGET): $(OBJECTS) $(HEADER)
 	$(CC) $(CFLAGS) $(OBJECTS) -o $@
 
 clean:
-	rm -rf *.o $(TARGET) core
+	rm -rf *.o servet/*.o slave/*.o $(TARGET) core

@@ -11,8 +11,8 @@ typedef enum {
     SLAVE_DATA = 0,
     SLAVE_INIT_ERROR = 1,
     SLAVE_DATA_ERROR = 2,
-    SLAVE_NETW_ERROR = 3,
-    SLAVE_TIME_ERROR = 4,
+    SLAVE_NETWORK_ERROR = 3,
+    SLAVE_TIMEOUT_ERROR = 4,
 } slave_event_t;
 
 /* Callbacks */
