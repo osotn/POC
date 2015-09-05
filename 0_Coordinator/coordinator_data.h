@@ -6,6 +6,7 @@
 #define COORDINATOR_DATA_H
 
 #include <stdint.h>
+#include <netinet/in.h>
 
 #define OPTIONS_NUM 8
 
@@ -19,7 +20,7 @@ typedef struct data_opt_t
 typedef struct data_t
 {
   char dev_name[100];
-  uint32_t dev_addr;
+  struct sockaddr_in dev_addr;
   data_opt_t opts[OPTIONS_NUM];
 } data_t;
 

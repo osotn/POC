@@ -5,7 +5,6 @@
 
 #include <stdio.h>
 #include <errno.h>
-#include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/un.h>
@@ -17,11 +16,6 @@
 slave_serialize_cb_t serialize_cb;
 slave_deserialize_cb_t deserialize_cb;
 
-// XXX local ip for test.
-// port MIGHT be configured or not
-const int port = 5005;
-const char *addr = "127.0.0.1";
-
 #define PKG_LEN OPTIONS_NUM * sizeof(int32_t)
 
 slave_event_t slave_update(data_t *command, data_t *answer)
@@ -30,10 +24,12 @@ slave_event_t slave_update(data_t *command, data_t *answer)
         .tv_sec = 0,
         .tv_usec = 10000
     };
-    struct sockaddr_in serv_addr = {
+    struct sockaddr_in dev_addr = {
         .sin_family = AF_INET,
-        .sin_port = htons(port),
-        .sin_addr.s_addr = inet_addr(addr)
+#if 1 // XXX local ip and predefined port for test. 
+        .sin_port = htons(5005),
+        .sin_addr.s_addr = INADDR_ANY
+#endif
     };
     int8_t pkg[PKG_LEN] = {};
     int32_t len = PKG_LEN, addr_len = sizeof(struct sockaddr_in);
@@ -48,12 +44,12 @@ slave_event_t slave_update(data_t *command, data_t *answer)
         return SLAVE_NETW_ERROR;
     }
 
-    if (serialize_cb(command, pkg) != SLAVE_DATA)
+    if (serialize_cb(command, pkg, &dev_addr) != SLAVE_DATA)
         return SLAVE_DATA_ERROR;
 
     printf("Slave Interface Stub: Send command = '%s' to slave\n", pkg);
     if ((len = sendto(sockfd, pkg, sizeof(pkg), 0,
-        (struct sockaddr *)&serv_addr, addr_len)) < 0)
+        (struct sockaddr *)&dev_addr, addr_len)) < 0)
     {
         perror("send");
         return SLAVE_NETW_ERROR;
@@ -66,14 +62,14 @@ slave_event_t slave_update(data_t *command, data_t *answer)
     }
 
     if ((len = recvfrom(sockfd, pkg, sizeof(pkg), 0,
-        (struct sockaddr *)&serv_addr, (socklen_t *)&addr_len)) <= 0)
+        (struct sockaddr *)&dev_addr, (socklen_t *)&addr_len)) <= 0)
     {
         perror("recv");
         return SLAVE_TIME_ERROR;
     }
     
     printf("Slave Interface Stub: Recv answer = '%s' from slave\n", pkg);
-    if (deserialize_cb(answer, pkg) != SLAVE_DATA)
+    if (deserialize_cb(answer, pkg, &dev_addr) != SLAVE_DATA)
         return SLAVE_DATA_ERROR;
 
     return SLAVE_DATA;
