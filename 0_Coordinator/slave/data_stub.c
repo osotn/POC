@@ -15,10 +15,8 @@ slave_event_t slave_serialize(data_t *data, int8_t *pkg, struct sockaddr_in *add
 
     printf("Slave Serialize: data = %p\n", data);
 
-// XXX Remove when server will be implemented and store valid data here 
-#if 0
-    memcpy(addr, &data->dev_addr, sizeof(struct sockaddr_in));
-#endif
+    memcpy(&data->dev_addr.sin_addr, &addr->sin_addr, sizeof(struct in_addr));
+
     for (i = 0; i < OPTIONS_NUM; i++)
     {
         memcpy(pkg, &data->opts[i].value, opt_value_size);
@@ -37,7 +35,7 @@ slave_event_t slave_deserialize(data_t *data, int8_t *pkg, struct sockaddr_in *a
 
     printf("Slave Deserialize: data = %p\n", data);
     
-    memcpy(&data->dev_addr, addr, sizeof(struct sockaddr_in));
+    memcpy(&addr->sin_addr, &data->dev_addr.sin_addr, sizeof(struct in_addr));
     
     for (i = 0; i < OPTIONS_NUM; i++)
     {
@@ -45,7 +43,7 @@ slave_event_t slave_deserialize(data_t *data, int8_t *pkg, struct sockaddr_in *a
         pkg += opt_value_size;
     }
 
-    printf("Slave Deserialize: pkg = %s\n", pkg);
+    printf("Slave Deserialize: pkg = %p\n", pkg);
 
     return SLAVE_DATA;
 }

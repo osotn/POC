@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <errno.h>
+#include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/un.h>
@@ -18,6 +19,25 @@ static slave_deserialize_cb_t deserialize_cb;
 
 #define PKG_LEN (OPTIONS_NUM * sizeof(int32_t))
 
+// XXX For debug only
+#if 0
+static void print_opt(data_t *data,  struct sockaddr_in *dev_addr)
+{
+    int i;
+
+    printf("\n\tOUTPUT: dev_name %s addr %s port %d\n", data->dev_name,
+        inet_ntoa(dev_addr->sin_addr), ntohs(dev_addr->sin_port));
+    for (i = 0; i < 3; i++)
+    {
+        data_opt_t *option = &data->opts[i];
+        printf("\tOUTPUT: %d name  %s\n", i, option->name);
+        printf("\tOUTPUT: %d str_v %s\n", i, option->str_value);
+        printf("\tOUTPUT: %d value %d\n", i, option->value);
+    }
+    printf("\n");
+}
+#endif
+
 slave_event_t slave_update(data_t *command, data_t *answer)
 {
     struct timeval timeout = {
@@ -26,10 +46,7 @@ slave_event_t slave_update(data_t *command, data_t *answer)
     };
     struct sockaddr_in dev_addr = {
         .sin_family = AF_INET,
-#if 1 // XXX local ip and predefined port for test. 
         .sin_port = htons(5005),
-        .sin_addr.s_addr = INADDR_ANY
-#endif
     };
     int8_t pkg[PKG_LEN] = {};
     int len = PKG_LEN, addr_len = sizeof(struct sockaddr_in);
@@ -47,7 +64,12 @@ slave_event_t slave_update(data_t *command, data_t *answer)
     if (serialize_cb(command, pkg, &dev_addr) != SLAVE_DATA)
         return SLAVE_DATA_ERROR;
 
-    printf("Slave Interface Stub: Send command = '%s' to slave\n", pkg);
+    printf("Slave Interface Stub: Send command = '%p' to slave\n", pkg);
+// XXX For debug only
+#if 0
+    print_opt(command, &dev_addr);
+#endif
+
     if ((len = sendto(sockfd, pkg, sizeof(pkg), 0,
         (struct sockaddr *)&dev_addr, addr_len)) < 0)
     {
@@ -68,7 +90,7 @@ slave_event_t slave_update(data_t *command, data_t *answer)
         return SLAVE_TIMEOUT_ERROR;
     }
     
-    printf("Slave Interface Stub: Recv answer = '%s' from slave\n", pkg);
+    printf("Slave Interface Stub: Recv answer = '%p' from slave\n", pkg);
     if (deserialize_cb(answer, pkg, &dev_addr) != SLAVE_DATA)
         return SLAVE_DATA_ERROR;
 

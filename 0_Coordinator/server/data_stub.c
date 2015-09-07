@@ -20,9 +20,34 @@ server_event_t server_serialize(data_t *data, char *script_str,
   return SERVER_DATA;
 }
 
-static server_event_t parse_line(int line, data_t *data, char *buf)
+static server_event_t parse_line(int i, data_t *data, char *line)
 {
-    printf("\tOUTPUT: %d %s", line, buf);
+    static int opts_num = 0;
+    char addr[16];
+// For debug only
+#if 1
+    printf("\tOUTPUT: %d %s\n", i, line);
+#endif
+    if (!i)
+    {
+        sscanf(line, "%s %s %d", data->dev_name, addr, &opts_num);
+        if (!inet_aton(addr, &data->dev_addr.sin_addr))
+        {
+            printf("Invalid address\n");
+            return SERVER_ERROR;
+        }
+    }//XXX Shoud we use i < opts_num ?
+    else if (0 < i < OPTIONS_NUM)
+    {
+        int j = i - 1;
+        
+        sscanf(line, "%s %d %s", data->opts[j].name, &data->opts[j].value,
+              data->opts[j].str_value);
+    }
+    else
+    {
+        return SERVER_ERROR;
+    }
     return SERVER_DATA;
 }
 
@@ -31,7 +56,7 @@ server_event_t server_deserialize(data_t *data, char *script_str,
   int *str_size)
 {
   char *script_cmd, *dev_name;
-  char cmd[sizeof(PARSER_CMD) + NAME_LEN], buf[2 * NAME_LEN];
+  char cmd[sizeof(PARSER_CMD) + NAME_LEN], line_buf[2 * NAME_LEN];
   int line = 0, script_str_len = *str_size ? *str_size : strlen(script_str) + 1;
   FILE *fp;
 
@@ -63,9 +88,9 @@ server_event_t server_deserialize(data_t *data, char *script_str,
     return SERVER_ERROR;
   }
   
-  while (fgets(buf, sizeof(buf), fp))
+  while (fgets(line_buf, sizeof(line_buf), fp))
   {
-    if (parse_line(line++, data, buf) != SERVER_DATA)
+    if (parse_line(line++, data, line_buf) != SERVER_DATA)
         return SERVER_ERROR;
   }
 
