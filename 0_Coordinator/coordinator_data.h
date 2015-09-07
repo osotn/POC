@@ -9,17 +9,18 @@
 #include <netinet/in.h>
 
 #define OPTIONS_NUM 8
+#define NAME_LEN 100
 
 typedef struct data_opt_t
 {
-  char name[100];
-  char str_value[100];
+  char name[NAME_LEN];
+  char str_value[NAME_LEN];
   int32_t  value;
 } data_opt_t;
 
 typedef struct data_t
 {
-  char dev_name[100];
+  char dev_name[NAME_LEN];
   struct sockaddr_in dev_addr;
   data_opt_t opts[OPTIONS_NUM];
 } data_t;
