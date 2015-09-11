@@ -1,0 +1,91 @@
+*   _^_   Smart_Home project 
+*  /|o|\      (c) 2015
+*  =====
+
+Iterations
+==========
+
+#1   9/Aug/2015-26/Aug/2015 - Design Document
+#2  27/Aug/2015-12/Sep/2015 - Implement The Coordinator, POC version
+#3  14/Sep/2015-            - 
+
+
+
+#1 Iteration
+------------
+Title:  Design document
+Target: Design document Smart_Home/Master_demon
+
+Start:  9 Aug 2015
+Planning Days: 2 weeks
+
+Demo: None
+
+Finish: 26 Aug 2015 (2.5 weeks (+0.5 week))
+
+Retrospective: 
+  pros: 
+     1. Google Doc
+     2. A lot ideas
+     3. Discussions
+  cons:
+     1. Long time
+     2. Don't use git
+     3. ...
+
+#2 Iteration
+------------
+Title:  Implement The Coordinator, POC version 
+Target: Implement The Coordinator, POC version - printf, without configuration
+        (#define or consts). Main scope on framework, server and slave
+        implementation may be low quality.
+
+Start:  27 Aug 2015
+Planning Days: 2 weeks
+
+Demo: Send server command as UDP messages from "ncat" utility, simple slave stub.
+
+Finish: 12 Sep 2015 (2 weeks)
+
+Retrospective: 
+  pros: 
+     1. 
+     2.
+     3.
+  cons:
+     1.
+     2.
+     3.
+
+
+#3 Iteration
+------------
+Title:
+Target:
+
+Start: 14 Sep 2015
+Planning Days: ? weeks
+
+Demo:
+
+Finish: ? (? weeks - +/- weeks/day)
+
+Retrospective: 
+  pros: 
+     1. 
+     2.
+     3.
+  cons:
+     1.
+     2.
+     3.
+
+
+
+
+
+
+
+
+
+
