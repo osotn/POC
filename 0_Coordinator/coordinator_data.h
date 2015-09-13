@@ -14,13 +14,11 @@
 
 typedef struct data_opt_t
 {
-  bool enable;
   int32_t value;
 } data_opt_t;
 
 typedef struct data_t
 {
-  char dev_name[NAME_LEN];
   struct sockaddr_in dev_addr;
   data_opt_t opts[OPTIONS_NUM];
 } data_t;

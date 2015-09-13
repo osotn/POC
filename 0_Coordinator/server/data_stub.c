@@ -11,27 +11,91 @@
 #include <arpa/inet.h>
 #include "../server_data.h"
 
+#define DATA_WRITE_CMD "python ./server/smarthome_data_update.py --addr %s --write%s --file ./etc/data.xml"
+#define CFG_VALUE2NAME_CMD  "python ./server/smarthome_cfg_parse.py --addr %s%s --file ./etc/cfg.xml"
 server_event_t server_serialize(data_t *data, char *script_str,
   int *str_size)
 {
-  printf("Server Serialize: data = %p\n", data);
+  int i, len;
+  char opts[1000], cmd[1000], buf[1000], *addr, *p;
+  FILE *fp;
 
-  /* XXX */
-  strcpy(script_str, "==answer from slave to server==");
+  addr = inet_ntoa(data->dev_addr.sin_addr);
 
-  /* TODO 1. Write data to data.xml - alredy ready in smarthome_data_update.py
-   *          ? - how define end of package, slave need to set enable option.
-   *
-   *      2. Translate values to names, update smarthome_cfg_parse.py
+  printf("Server Serialize:\n");
+
+  for (i = 0, len = 0; i < OPTIONS_NUM; i++)
+    len += sprintf(opts + len, " %d %d", i, data->opts[i].value);
+
+  snprintf(cmd, sizeof(cmd), DATA_WRITE_CMD, addr, opts);
+
+  printf("\tWrite to data.xml: %s\n", cmd);
+
+  if (!(fp = popen(cmd, "r")))
+  {
+    perror("Error in popen\n");
+    return SERVER_ERROR;
+  }
+
+  if (!fgets(buf, sizeof(buf), fp))
+  {
+    pclose(fp);
+    return SERVER_ERROR;
+  }
+  pclose(fp);
+
+  printf("Data update result: \"%s\"\n", buf);
+
+  /* Output: {OK, FAILED}
    */
+  if (strcmp(buf, "OK\n")) /* ? Python send "OK\n" om print "OK" */
+  {
+    printf("data parser failed: %s\n", buf);
+    return SERVER_ERROR;
+  }
+
+  /* CFG: Translate to name */
+  snprintf(cmd, sizeof(cmd), CFG_VALUE2NAME_CMD, addr, opts);
+
+  printf("\t CFG Translate values to name command: %s\n", cmd);
+
+  if (!(fp = popen(cmd, "r")))
+  {
+    perror("Error in popen\n");
+    return SERVER_ERROR;
+  }
+
+  if (!fgets(buf, sizeof(buf), fp))
+  {
+    pclose(fp);
+    return SERVER_ERROR;
+  }
+  pclose(fp);
+
+  printf("Data update result: %s\n", buf);
+
+  /* Output: {OK, FAILED} [<option_name> <option_value>]
+   */
+
+  p = strtok(buf, " ");
+
+  if (strcmp(p, "OK"))
+  {
+    printf("data parser: %s\n", buf);
+    return SERVER_ERROR;
+  }
+
+  while (*p++);
+
+  strcpy(script_str, p);
 
   printf("Server Serialize: script = \"%s\"\n", script_str);
 
   return SERVER_DATA;
 }
 
-#define CFG_PARSER_CMD  "python ./server/smarthome_cfg_parse.py --device %s --file ./etc/cfg.xml"
-#define DATA_PARSER_CMD "python ./server/smarthome_data_update.py --addr %s --file ./etc/data.xml"
+#define CFG_NAME2VALUE_CMD  "python ./server/smarthome_cfg_parse.py --device %s --file ./etc/cfg.xml"
+#define DATA_READ_CMD "python ./server/smarthome_data_update.py --addr %s --file ./etc/data.xml"
 server_event_t server_deserialize(data_t *data, char *script_str,
   int *str_size)
 {
@@ -43,7 +107,9 @@ server_event_t server_deserialize(data_t *data, char *script_str,
 
   printf("Server Deserialize: script = \"%s\"\n", script_str);
   
-  snprintf(cmd, sizeof(cmd), CFG_PARSER_CMD, script_str);
+  snprintf(cmd, sizeof(cmd), CFG_NAME2VALUE_CMD, script_str);
+
+  printf("Server Deserialize: cmd = \"%s\"\n", cmd);
 
   if (!(fp = popen(cmd, "r")))
   {
@@ -81,7 +147,9 @@ server_event_t server_deserialize(data_t *data, char *script_str,
   }
 
   /* Get states from data.xml */
-  snprintf(cmd, sizeof(cmd), DATA_PARSER_CMD, p);
+  snprintf(cmd, sizeof(cmd), DATA_READ_CMD, p);
+
+  printf("Server Deserialize: cmd = \"%s\"\n", cmd);
 
   if (!(fp = popen(cmd, "r")))
   {
@@ -98,6 +166,8 @@ server_event_t server_deserialize(data_t *data, char *script_str,
 
   /* Output: {OK, FAILED} [id=value]
    */
+
+  printf("Data update result: %s\n", data_buf);
 
   p = strtok_r(data_buf, " ", &p_data);
 
@@ -116,13 +186,10 @@ server_event_t server_deserialize(data_t *data, char *script_str,
     value = atoi(p);
 
     if (id >= 0 && id < OPTIONS_NUM)
-    {
       data->opts[id].value = value;
-      data->opts[id].enable = true;
-    }
   }
 
-  /* new values */
+  /* new values, ha-ha it's a copy-past */
   while ((p = strtok_r(NULL, "=", &p_cfg)))
   {
     int id, value;
@@ -132,10 +199,7 @@ server_event_t server_deserialize(data_t *data, char *script_str,
     value = atoi(p);
 
     if (id >= 0 && id < OPTIONS_NUM)
-    {
       data->opts[id].value = value;
-      data->opts[id].enable = true;
-    }
   }
 
   printf("Server Deserialize: data:\n");
@@ -143,11 +207,8 @@ server_event_t server_deserialize(data_t *data, char *script_str,
   printf("ip = %s\n", inet_ntoa(data->dev_addr.sin_addr));
   {
     int i = 0;
-    for (i=0; i<OPTIONS_NUM; i++)
-    {
-      if (data->opts[i].enable)
+    for (i = 0; i < OPTIONS_NUM; i++)
         printf("\t %d = %d\n", i, data->opts[i].value);
-    }
   }
   printf("=========================\n");
 

@@ -22,11 +22,13 @@ slaves = root.findall('slave')
 # TODO output format description
 result = "OK"
 
+the_slave = None
 for slave in slaves:
-  if slave.attrib['addr'] == args.addr:
+  if ('addr' in slave.attrib) and (slave.attrib['addr'] == args.addr):
     the_slave = slave
 
-if not args.write:
+if args.write is None:
+  # READ
   if the_slave is None:
     result = "FAILED IP address %s is absent in %s" % (args.addr, args.file)
     print result; sys.exit(1)
@@ -36,12 +38,12 @@ if not args.write:
   for option in options:
     result +=" %s=%s" % (option.attrib['id'], option.attrib['value'])
 else:
+  # WRITE
   if the_slave is None:
-    the_slave = etree.SubElement(the_slaves, "slave")
+    the_slave = etree.SubElement(root, "slave")
     the_slave.attrib['add'] = args.addr
-   
-  print the_slave.attrib
 
+  the_option = None
   for i in range(0, len(args.write), 2):
     the_option = None
     options = the_slave.findall('opt')
@@ -54,9 +56,7 @@ else:
       the_option.attrib['id'] = args.write[i]
 
     the_option.attrib['value'] = args.write[i+1]  
-
-    print the_option.attrib
   
   tree.write(args.file)
     
-print result; sys.exit(0)
+print (result); sys.exit(0)

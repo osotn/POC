@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <devices>
-  <device name="kitchen_led" ip="1.1.0.10" >
+  <device name="kitchen_led" ip="1.1.0.20" >
     <opt name="main_light" id="1" default="off" type='enum'>
        <values on="1" off="0"/>
     </opt>
@@ -12,7 +12,7 @@
     </opt>
   </device>
 
-  <device name="switch" ip="1.1.0.20" >
+  <device name="switch" ip="1.1.0.10" >
     <opt name="led" id="0" default="off" type='enum'>
        <values on="1" off="0"/>
     </opt>

@@ -64,7 +64,7 @@ slave_event_t slave_update(data_t *command, data_t *answer)
     if (serialize_cb(command, pkg, &dev_addr) != SLAVE_DATA)
         return SLAVE_DATA_ERROR;
 
-    printf("Slave Interface Stub: Send command = '%p' to slave\n", pkg);
+    printf("Slave Interface Stub: Send command  to slave\n");
 // XXX For debug only
 #if 0
     print_opt(command, &dev_addr);
@@ -83,14 +83,20 @@ slave_event_t slave_update(data_t *command, data_t *answer)
         return SLAVE_NETWORK_ERROR;
     }
 
+#if 1
+    /* XXX TEST */
+    sleep(1);
+    
+#else
     if ((len = recvfrom(sockfd, pkg, sizeof(pkg), 0,
         (struct sockaddr *)&dev_addr, (socklen_t *)&addr_len)) <= 0)
     {
         perror("recv");
         return SLAVE_TIMEOUT_ERROR;
     }
+#endif
     
-    printf("Slave Interface Stub: Recv answer = '%p' from slave\n", pkg);
+    printf("Slave Interface Stub: Recv answer from slave\n");
     if (deserialize_cb(answer, pkg, &dev_addr) != SLAVE_DATA)
         return SLAVE_DATA_ERROR;
 
