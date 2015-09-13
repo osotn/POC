@@ -7,7 +7,7 @@ TARGET=coordinator
 #CFLAGS=-g -Wall -Werror -o0
 CFLAGS=-g -o0
 HEADERS=coordinator.h server_interface.h slave_interface.h server_data.h \
-  slave_data.h data.h
+  slave_data.h coordinator_data.h
 OBJECTS=main.o coordinator.o \
   server/interface_stub.o server/data_stub.o \
   slave/interface_stub.o slave/data_stub.o

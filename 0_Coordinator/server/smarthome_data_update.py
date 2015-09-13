@@ -4,6 +4,7 @@
 #  /|o|\      (c) 2015
 #  =====
 
+import sys
 import argparse
 import xml.etree.ElementTree as etree
 
@@ -19,19 +20,21 @@ root = tree.getroot()
 slaves = root.findall('slave')
 
 # TODO output format description
-result = ""
+result = "OK"
 
 for slave in slaves:
   if slave.attrib['addr'] == args.addr:
     the_slave = slave
 
 if not args.write:
-  if the_slave is not None:
-    options = the_slave.findall('opt')
-    # format:  <addr> [<opt_id> <opt_value>]
-    result += "%s" % (args.addr)
-    for option in options:
-      result +=" %s %s" % (option.attrib['id'], option.attrib['value'])
+  if the_slave is None:
+    result = "FAILED IP address %s is absent in %s" % (args.addr, args.file)
+    print result; sys.exit(1)
+
+  options = the_slave.findall('opt')
+  # format: [<opt_id>=<opt_value>]
+  for option in options:
+    result +=" %s=%s" % (option.attrib['id'], option.attrib['value'])
 else:
   if the_slave is None:
     the_slave = etree.SubElement(the_slaves, "slave")
@@ -39,7 +42,7 @@ else:
    
   print the_slave.attrib
 
-  for i in range(0, len(args.write)-1, 2):
+  for i in range(0, len(args.write), 2):
     the_option = None
     options = the_slave.findall('opt')
     for option in options:
@@ -55,6 +58,5 @@ else:
     print the_option.attrib
   
   tree.write(args.file)
-  result += "OK"
     
-print result
+print result; sys.exit(0)

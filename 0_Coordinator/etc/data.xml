@@ -1,11 +1,10 @@
 <slaves>
-  <slave addr="1.1.0.10" status="Unknown">
-    <opt id="0" value="1" />
-    <opt id="1" value="2" />
-    <opt id="2" value="5" />
-    <opt id="3" value="4" />
-  </slave>
   <slave addr="1.1.0.20" status="Unknown">
+    <opt id="0" value="0" />
+    <opt id="1" value="0" />
+    <opt id="2" value="0" />
+  </slave>
+  <slave addr="1.1.0.10" status="Unknown">
     <opt id="0" value="0" />
   </slave>
 </slaves>

@@ -6,6 +6,7 @@
 #define COORDINATOR_DATA_H
 
 #include <stdint.h>
+#include <stdbool.h>
 #include <netinet/in.h>
 
 #define OPTIONS_NUM 8
@@ -13,9 +14,8 @@
 
 typedef struct data_opt_t
 {
-  char name[NAME_LEN];
-  char str_value[NAME_LEN];
-  int32_t  value;
+  bool enable;
+  int32_t value;
 } data_opt_t;
 
 typedef struct data_t
