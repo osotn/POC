@@ -67,12 +67,7 @@ slave_event_t slave_deserialize(data_t *data, int8_t *pkg, struct sockaddr_in *a
     }
 #endif
 
-    printf("Slave Deserialize: data \n");
-    printf("=========================\n");
-    printf("ip = %s\n", inet_ntoa(data->dev_addr.sin_addr));
-    for (i = 0; i < OPTIONS_NUM; i++)
-      printf("\t %d = %d\n", i, data->opts[i].value);
-    printf("=========================\n");
+    data_print("Slave Deserialize:", data);
 
     return SLAVE_DATA;
 }

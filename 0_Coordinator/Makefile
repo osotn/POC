@@ -8,7 +8,7 @@ TARGET=coordinator
 CFLAGS=-g -o0
 HEADERS=coordinator.h server_interface.h slave_interface.h server_data.h \
   slave_data.h coordinator_data.h
-OBJECTS=main.o coordinator.o \
+OBJECTS=main.o coordinator.o coordinator_data.o \
   server/interface_stub.o server/data_stub.o \
   slave/interface_stub.o slave/data_stub.o
 

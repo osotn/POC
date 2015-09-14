@@ -27,4 +27,6 @@ typedef struct data_t
   data_opt_t opts[OPTIONS_NUM];
 } data_t;
 
+int data_print(char *msg_line, data_t *data);
+
 #endif/*COORDINATOR_DATA_H*/

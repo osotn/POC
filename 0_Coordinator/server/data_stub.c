@@ -144,15 +144,7 @@ server_event_t server_deserialize(data_t *data, char *script_str, int *str_size)
       data->opts[id].value = value;
   }
 
-  printf("Server Deserialize: data:\n");
-  printf("=========================\n");
-  printf("ip = %s\n", inet_ntoa(data->dev_addr.sin_addr));
-  {
-    int i = 0;
-    for (i = 0; i < OPTIONS_NUM; i++)
-        printf("\t %d = %d\n", i, data->opts[i].value);
-  }
-  printf("=========================\n");
+  data_print("Server Deserialize:", data);
 
   return SERVER_DATA;
 }
