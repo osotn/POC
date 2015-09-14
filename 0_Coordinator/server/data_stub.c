@@ -11,38 +11,24 @@
 #include <arpa/inet.h>
 #include "../server_data.h"
 
+static int do_cmd(char *cmd_name, char *addr, char *opts, char *buf, int buf_size, char *print_msg);
+
 #define DATA_WRITE_CMD "python ./server/smarthome_data_update.py --addr %s --write%s --file ./etc/data.xml"
 #define CFG_VALUE2NAME_CMD  "python ./server/smarthome_cfg_parse.py --addr %s%s --file ./etc/cfg.xml"
-server_event_t server_serialize(data_t *data, char *script_str,
-  int *str_size)
+server_event_t server_serialize(data_t *data, char *script_str, int *str_size)
 {
   int i, len;
-  char opts[1000], cmd[1000], buf[1000], *addr, *p;
-  FILE *fp;
-
-  addr = inet_ntoa(data->dev_addr.sin_addr);
+  char opts[1000], buf[1000], *addr, *p;
 
   printf("Server Serialize:\n");
+  
+  addr = inet_ntoa(data->dev_addr.sin_addr);
 
   for (i = 0, len = 0; i < OPTIONS_NUM; i++)
     len += sprintf(opts + len, " %d %d", i, data->opts[i].value);
 
-  snprintf(cmd, sizeof(cmd), DATA_WRITE_CMD, addr, opts);
-
-  printf("\tWrite to data.xml: %s\n", cmd);
-
-  if (!(fp = popen(cmd, "r")))
-  {
-    perror("Error in popen\n");
-    return SERVER_ERROR;
-  }
-
-  if (!fgets(buf, sizeof(buf), fp))
-  {
-    pclose(fp);
-    return SERVER_ERROR;
-  }
-  pclose(fp);
+  if (do_cmd(DATA_WRITE_CMD, addr, opts, buf, sizeof(buf), "Write to data.xml"))
+      return SERVER_ERROR;
 
   printf("Data update result: \"%s\"\n", buf);
 
@@ -55,22 +41,8 @@ server_event_t server_serialize(data_t *data, char *script_str,
   }
 
   /* CFG: Translate to name */
-  snprintf(cmd, sizeof(cmd), CFG_VALUE2NAME_CMD, addr, opts);
-
-  printf("\t CFG Translate values to name command: %s\n", cmd);
-
-  if (!(fp = popen(cmd, "r")))
-  {
-    perror("Error in popen\n");
-    return SERVER_ERROR;
-  }
-
-  if (!fgets(buf, sizeof(buf), fp))
-  {
-    pclose(fp);
-    return SERVER_ERROR;
-  }
-  pclose(fp);
+  if (do_cmd(CFG_VALUE2NAME_CMD, addr, opts, buf, sizeof(buf), "CFG Translate values to name command"))
+      return SERVER_ERROR;
 
   printf("Data update result: %s\n", buf);
 
@@ -87,7 +59,7 @@ server_event_t server_serialize(data_t *data, char *script_str,
 
   while (*p++);
 
-  strcpy(script_str, p);
+  strncpy(script_str, p, *str_size);
 
   printf("Server Serialize: script = \"%s\"\n", script_str);
 
@@ -96,35 +68,19 @@ server_event_t server_serialize(data_t *data, char *script_str,
 
 #define CFG_NAME2VALUE_CMD  "python ./server/smarthome_cfg_parse.py --device %s --file ./etc/cfg.xml"
 #define DATA_READ_CMD "python ./server/smarthome_data_update.py --addr %s --file ./etc/data.xml"
-server_event_t server_deserialize(data_t *data, char *script_str,
-  int *str_size)
+server_event_t server_deserialize(data_t *data, char *script_str, int *str_size)
 {
-  char cmd[1000], cfg_buf[1000], data_buf[1000], *p_cfg, *p_data, *p;
-  FILE *fp;
+  char cfg_buf[1000], data_buf[1000], *p_cfg, *p_data, *p;
 
   /* Disable all options */
   memset(data, 0, sizeof(*data));
 
   printf("Server Deserialize: script = \"%s\"\n", script_str);
   
-  snprintf(cmd, sizeof(cmd), CFG_NAME2VALUE_CMD, script_str);
+  if (do_cmd(CFG_NAME2VALUE_CMD, NULL, script_str, cfg_buf, sizeof(cfg_buf), "Server Deserialize"))
+      return SERVER_ERROR;
 
-  printf("Server Deserialize: cmd = \"%s\"\n", cmd);
-
-  if (!(fp = popen(cmd, "r")))
-  {
-    perror("Error in popen\n");
-    return SERVER_ERROR;
-  }
-
-  if(!fgets(cfg_buf, sizeof(cfg_buf), fp))
-  {
-    pclose(fp);
-    return SERVER_ERROR;
-  }
-  pclose(fp);
-
-  printf("Cfg parser result: %s\n", cfg_buf);
+  printf("\tCfg parser result: %s\n", cfg_buf);
 
   /* Output: {OK, FAILED} <dev_ip> [id=value]
    */
@@ -140,29 +96,15 @@ server_event_t server_deserialize(data_t *data, char *script_str,
   /* ip address */
   p = strtok_r(NULL, " ", &p_cfg);
 
-  if (-1 == (data->dev_addr.sin_addr.s_addr = inet_addr(p)))
+  if ((data->dev_addr.sin_addr.s_addr = inet_addr(p)) == INADDR_NONE)
   {
     printf("IP address string  %s is failed\n", p);
     return SERVER_ERROR;
   }
 
   /* Get states from data.xml */
-  snprintf(cmd, sizeof(cmd), DATA_READ_CMD, p);
-
-  printf("Server Deserialize: cmd = \"%s\"\n", cmd);
-
-  if (!(fp = popen(cmd, "r")))
-  {
-    perror("Error in popen\n");
-    return SERVER_ERROR;
-  }
-
-  if(!fgets(data_buf, sizeof(data_buf), fp))
-  {
-    pclose(fp);
-    return SERVER_ERROR;
-  }
-  pclose(fp);
+  if (do_cmd(DATA_READ_CMD, NULL, p, data_buf, sizeof(data_buf), "Server Deserialize"))
+      return SERVER_ERROR;
 
   /* Output: {OK, FAILED} [id=value]
    */
@@ -213,4 +155,31 @@ server_event_t server_deserialize(data_t *data, char *script_str,
   printf("=========================\n");
 
   return SERVER_DATA;
+}
+
+static int do_cmd(char *cmd_name, char *addr, char *opts, char *buf, int buf_size, char *print_msg)
+{
+    char cmd[1000] = {};
+    FILE *fp;
+    
+    if (addr)
+        snprintf(cmd, sizeof(cmd), cmd_name, addr, opts);
+    else
+        snprintf(cmd, sizeof(cmd), cmd_name, opts);
+
+    printf("%s: %s\n", print_msg, cmd);
+
+    if (!(fp = popen(cmd, "r")))
+    {
+        perror("Error in popen\n");
+        return -1;
+    }
+
+    if (!fgets(buf, buf_size, fp))
+    {
+        pclose(fp);
+		return -1;
+    }
+    pclose(fp);
+    return 0;
 }

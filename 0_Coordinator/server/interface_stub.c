@@ -43,11 +43,9 @@ int server_run(server_handle_cb_t handle_cb, server_serialize_cb_t serialize_cb,
     {
         data_t cmd, answer;
         server_event_t event;
-        // XXX test cmd from script
-        char cmd_script_str[] = "kitchen_led left on";
-        char answer_script_str[100];
-        int script_str_len = strlen(cmd_script_str) + 1;
-        int size = sizeof(answer_script_str)/sizeof(char);
+        char cmd_script_str[1000] = {};
+        char answer_script_str[1000];
+        int script_str_len, size = sizeof(answer_script_str);
 #if 0
         if ((len = recvfrom(sockfd, cmd_script_str, sizeof(cmd_script_str), 0,
             (struct sockaddr *)&client_addr, (socklen_t*)&addr_len)) <= 0)
@@ -55,7 +53,12 @@ int server_run(server_handle_cb_t handle_cb, server_serialize_cb_t serialize_cb,
             if (len < 0)
                 error("recv");
         }
+#else
+        // XXX test cmd from script
+        strcpy(cmd_script_str, "kitchen_led left on");
 #endif
+        script_str_len = strlen(cmd_script_str) + 1;
+
         printf("%d. Server_interface Stub: Received cmd from server:\n", i++);
         printf("\t cmd = \"%s\"\n", cmd_script_str);
         event = deserialize_cb(&cmd, cmd_script_str, &script_str_len);

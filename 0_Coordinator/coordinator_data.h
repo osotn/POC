@@ -12,11 +12,15 @@
 #define OPTIONS_NUM 8
 #define NAME_LEN 100
 
+#if 1
 typedef struct data_opt_t
 {
   int32_t value;
 } data_opt_t;
-
+#else
+// XXX Do we need struct? Probably yes.
+typedef int32_t data_opt_t;
+#endif
 typedef struct data_t
 {
   struct sockaddr_in dev_addr;
