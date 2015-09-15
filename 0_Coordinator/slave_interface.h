@@ -23,7 +23,7 @@ typedef slave_event_t(*slave_deserialize_cb_t)(data_t *data, int8_t *pkg,
 
 /* Methods */
 int slave_init(slave_serialize_cb_t serialize_cb,
-  slave_deserialize_cb_t deserialize_cb);
+    slave_deserialize_cb_t deserialize_cb);
 slave_event_t slave_update(data_t *command, data_t *answer);
 
 #endif/*SLAVE_INTERFACE_H*/

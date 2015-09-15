@@ -3,8 +3,6 @@
  *  =====
  */
 
-#include <stdio.h>
-#include <unistd.h>
 #include <string.h>
 #include "../server_interface.h"
 
@@ -13,7 +11,9 @@ int server_run(server_handle_cb_t handle_cb, server_serialize_cb_t serialize_cb,
 {
     int i = 0;
     struct sockaddr_in client_addr = {},
-    serv_addr = {/* To test: ncat -vv localhost port -u*/
+    /* XXX To test: ncat -vv localhost port -u*/
+    /* TODO Remove port and addr */
+    serv_addr = {
         .sin_family = AF_INET,
         .sin_port = htons(4000),
         .sin_addr.s_addr = htonl(INADDR_LOOPBACK)
@@ -46,6 +46,8 @@ int server_run(server_handle_cb_t handle_cb, server_serialize_cb_t serialize_cb,
         char cmd_script_str[1000] = {};
         char answer_script_str[1000];
         int script_str_len, size = sizeof(answer_script_str);
+
+        // TODO test cmd from script
 #if 0
         if ((len = recvfrom(sockfd, cmd_script_str, sizeof(cmd_script_str), 0,
             (struct sockaddr *)&client_addr, (socklen_t*)&addr_len)) <= 0)
@@ -54,20 +56,23 @@ int server_run(server_handle_cb_t handle_cb, server_serialize_cb_t serialize_cb,
                 error("recv");
         }
 #else
-        // XXX test cmd from script
         strcpy(cmd_script_str, "kitchen_led left on");
 #endif
         script_str_len = strlen(cmd_script_str) + 1;
-
+#ifdef SERVER_DEBUG_PRINT
         printf("%d. Server_interface Stub: Received cmd from server:\n", i++);
         printf("\t cmd = \"%s\"\n", cmd_script_str);
+#endif
         event = deserialize_cb(&cmd, cmd_script_str, &script_str_len);
 
         handle_cb(event, &cmd, &answer);
 
         event = serialize_cb(&answer, answer_script_str, &size);
+#ifdef SERVER_DEBUG_PRINT
         printf("Server_interface Stub: Received answer to server:\n");
         printf("\t answer = \"%s\"\n", answer_script_str);
+#endif
+        // TODO test cmd from script
 #if 0
         if ((len = sendto(sockfd, answer_script_str, sizeof(answer_script_str), 0,
             (struct sockaddr *)&client_addr, addr_len)) < 0)
@@ -75,8 +80,10 @@ int server_run(server_handle_cb_t handle_cb, server_serialize_cb_t serialize_cb,
             perror("send");
             return 1;
         }
-#endif     
+#endif
+#ifdef SERVER_DEBUG_PRINT
         printf("---------------------------------------------------------\n\n");
+#endif
         sleep(2);
     }
     return 0;

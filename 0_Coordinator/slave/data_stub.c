@@ -3,11 +3,7 @@
  *  =====
  */
 
-#include <stdio.h>
 #include <string.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include "../slave_data.h"
 
 #if 1
@@ -22,9 +18,9 @@ slave_event_t slave_serialize(data_t *data, int8_t *pkg, struct sockaddr_in *add
 {
     int i;
     size_t opt_value_size = sizeof(data->opts->value);
-
+#ifdef SLAVE_DEBUG_PRINT
     printf("Slave Serialize: data\n");
-
+#endif
 #if 1
     /* XXX TEST */
     s_addr = data->dev_addr;
@@ -39,8 +35,9 @@ slave_event_t slave_serialize(data_t *data, int8_t *pkg, struct sockaddr_in *add
         memcpy(pkg, &data->opts[i].value, opt_value_size);
         pkg += opt_value_size;
     }
+#ifdef SLAVE_DEBUG_PRINT
     printf("Slave Serialize: pkg\n");
-
+#endif
     return SLAVE_DATA;
 }   
 
@@ -49,9 +46,9 @@ slave_event_t slave_deserialize(data_t *data, int8_t *pkg, struct sockaddr_in *a
 {
     int i;
     size_t opt_value_size = sizeof(data->opts->value);
-
+#ifdef SLAVE_DEBUG_PRINT
     printf("Slave Deserialize: pkg \n");
-
+#endif
 #if 1
     /* XXX TEST */
     data->dev_addr = s_addr;
@@ -66,8 +63,8 @@ slave_event_t slave_deserialize(data_t *data, int8_t *pkg, struct sockaddr_in *a
         pkg += opt_value_size;
     }
 #endif
-
+#ifdef SLAVE_DEBUG_PRINT
     data_print("Slave Deserialize:", data);
-
+#endif
     return SLAVE_DATA;
 }

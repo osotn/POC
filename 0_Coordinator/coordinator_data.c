@@ -3,10 +3,6 @@
  *  =====
  */
 
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <stdio.h>
 #include "coordinator_data.h"
 
 int data_print(char *msg_line, data_t *data)
@@ -21,6 +17,5 @@ int data_print(char *msg_line, data_t *data)
     printf("\t %d = %d\n", i, data->opts[i].value);
 
   printf("=========================\n");
-
   return 0;
 }

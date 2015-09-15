@@ -7,8 +7,7 @@
 
 #include "coordinator_data.h"
 
-/*
- * TODO Coordinator description from design doc, or reference to.
+/* TODO Coordinator description from design doc, or reference to.
  */
  
 int coordinator_run(void);

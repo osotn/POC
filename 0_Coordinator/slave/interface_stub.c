@@ -3,40 +3,12 @@
  *  =====
  */
 
-#include <stdio.h>
-#include <errno.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <sys/un.h>
-#include <netdb.h>
-#include <string.h>
-#include <unistd.h>
 #include "../slave_interface.h"
 
 static slave_serialize_cb_t serialize_cb;
 static slave_deserialize_cb_t deserialize_cb;
 
 #define PKG_LEN (OPTIONS_NUM * sizeof(int32_t))
-
-// XXX For debug only
-#if 0
-static void print_opt(data_t *data,  struct sockaddr_in *dev_addr)
-{
-    int i;
-
-    printf("\n\tOUTPUT: dev_name %s addr %s port %d\n", data->dev_name,
-        inet_ntoa(dev_addr->sin_addr), ntohs(dev_addr->sin_port));
-    for (i = 0; i < 3; i++)
-    {
-        data_opt_t *option = &data->opts[i];
-        printf("\tOUTPUT: %d name  %s\n", i, option->name);
-        printf("\tOUTPUT: %d str_v %s\n", i, option->str_value);
-        printf("\tOUTPUT: %d value %d\n", i, option->value);
-    }
-    printf("\n");
-}
-#endif
 
 slave_event_t slave_update(data_t *command, data_t *answer)
 {
@@ -63,11 +35,8 @@ slave_event_t slave_update(data_t *command, data_t *answer)
 
     if (serialize_cb(command, pkg, &dev_addr) != SLAVE_DATA)
         return SLAVE_DATA_ERROR;
-
+#ifdef SLAVE_DEBUG_PRINT
     printf("Slave Interface Stub: Send command  to slave\n");
-// XXX For debug only
-#if 0
-    print_opt(command, &dev_addr);
 #endif
 
     if ((len = sendto(sockfd, pkg, sizeof(pkg), 0,
@@ -86,7 +55,6 @@ slave_event_t slave_update(data_t *command, data_t *answer)
 #if 1
     /* XXX TEST */
     sleep(1);
-    
 #else
     if ((len = recvfrom(sockfd, pkg, sizeof(pkg), 0,
         (struct sockaddr *)&dev_addr, (socklen_t *)&addr_len)) <= 0)
@@ -95,8 +63,9 @@ slave_event_t slave_update(data_t *command, data_t *answer)
         return SLAVE_TIMEOUT_ERROR;
     }
 #endif
-    
+#ifdef SLAVE_DEBUG_PRINT
     printf("Slave Interface Stub: Recv answer from slave\n");
+#endif
     if (deserialize_cb(answer, pkg, &dev_addr) != SLAVE_DATA)
         return SLAVE_DATA_ERROR;
 

@@ -3,7 +3,6 @@
  *  =====
  */
 
-#include <stdio.h>
 #include "coordinator.h"
 
 int main(void)
@@ -16,7 +15,7 @@ int main(void)
     /* TODO Daemonize it if it's necessary. 
      */    
 
-    /* coordinator_config(param, value), param=[IP addr, port, ...]
+    /* TODO coordinator_config(param, value), param=[IP addr, port, ...]
      */
 
     /*
