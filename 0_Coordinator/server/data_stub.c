@@ -45,10 +45,6 @@ server_event_t server_serialize(data_t *data, char *script_str, int *str_size)
         return SERVER_ERROR;
     }
 
-#ifdef SERVER_DEBUG_PRINT
-    printf("Server Serialize: script = \"%s\"\n", script_str);
-#endif
-
     /* CFG: Translate to name */
     if (do_cmd(CFG_VALUE2NAME_CMD, addr, opts, buf, sizeof(buf),
         "CFG Translate values to name command"))
