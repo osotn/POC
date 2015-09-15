@@ -11,14 +11,15 @@
 
 static int do_cmd(char *cmd_name, char *addr, char *opts, char *buf,
     int buf_size, char *print_msg);
-static void get_opts_value(data_t *data, char *p_strtok){}
+static void get_opts_value(data_t *data, char **p_strtok);
 
-#define DATA_WRITE_CMD "python UPDATE --addr %s --write%s --file ./etc/data.xml"
-#define CFG_VALUE2NAME_CMD  "python PARSE --addr %s%s --file ./etc/cfg.xml"
+#define DATA_WRITE_CMD "python "UPDATE" --addr %s --write%s --file ./etc/data.xml"
+#define CFG_VALUE2NAME_CMD  "python "PARSE" --addr %s%s --file ./etc/cfg.xml"
 server_event_t server_serialize(data_t *data, char *script_str, int *str_size)
 {
     int i, len;
     char opts[BUF_TMP_SIZE], buf[BUF_TMP_SIZE], *addr, *p;
+
 #ifdef SERVER_DEBUG_PRINT
     printf("Server Serialize:\n");
 #endif
@@ -94,14 +95,14 @@ server_event_t server_serialize(data_t *data, char *script_str, int *str_size)
     while (*p++);
 
     strncpy(script_str, p, *str_size);
-
+#ifdef SERVER_DEBUG_PRINT
     printf("Server Serialize: script = \"%s\"\n", script_str);
-
+#endif
     return SERVER_DATA;
 }
 
-#define CFG_NAME2VALUE_CMD  "python PARSE --device %s --file ./etc/cfg.xml"
-#define DATA_READ_CMD "python UPDATE --addr %s --file ./etc/data.xml"
+#define CFG_NAME2VALUE_CMD  "python "PARSE" --device %s --file ./etc/cfg.xml"
+#define DATA_READ_CMD "python "UPDATE" --addr %s --file ./etc/data.xml"
 server_event_t server_deserialize(data_t *data, char *script_str,
     int *str_size)
 {
@@ -158,69 +159,20 @@ server_event_t server_deserialize(data_t *data, char *script_str,
      */
     p = strtok_r(data_buf, " ", &p_data);
 
-    /* ip address */
-    p = strtok_r(NULL, " ", &p_cfg);
-
-    if ((data->dev_addr.sin_addr.s_addr = inet_addr(p)) == INADDR_NONE)
-    {
-        printf("IP address string  %s is failed\n", p);
-        return SERVER_ERROR;
-    }
-
-    /* Get states from data.xml */
-    if (do_cmd(DATA_READ_CMD, NULL, p, data_buf, sizeof(data_buf),
-        "Server Deserialize"))
-    {
-        return SERVER_ERROR;
-    }
-
-    printf("Data update result: %s\n", data_buf);
-    
-    /* Output: {OK, FAILED} [id=value]
-     */
-    p = strtok_r(data_buf, " ", &p_data);
-
     if (strcmp(p, "OK"))
     {
         printf("data parser: %s\n", data_buf);
         return SERVER_ERROR;
     }
 
-    while ((p = strtok_r(NULL, "=", &p_data)))
-    {
-        int id, value;
+    get_opts_value(data, &p_data);
 
-        id = atoi(p);
-        p = strtok_r(NULL, " ", &p_data);
-        value = atoi(p);
-
-        if (id >= 0 && id < OPTIONS_NUM)
-            data->opts[id].value = value;
-    }
-
-    /* new values, ha-ha it's a copy-past */
-    while ((p = strtok_r(NULL, "=", &p_cfg)))
-    {
-        int id, value;
-
-        id = atoi(p);
-        p = strtok_r(NULL, " ", &p_cfg);
-        value = atoi(p);
-
-        if (id >= 0 && id < OPTIONS_NUM)
-            data->opts[id].value = value;
-    }
+    /* new values */
+    get_opts_value(data, &p_cfg);
+    
 #ifdef SERVER_DEBUG_PRINT
     data_print("Server Deserialize:", data);
 #endif
- 
-    get_opts_value(data, p_data);
-
-    /* Get new values */
-    get_opts_value(data, p_cfg);
-    
-    data_print("Server Deserialize:", data);
-
     return SERVER_DATA;
 }
 
@@ -250,4 +202,20 @@ static int do_cmd(char *cmd_name, char *addr, char *opts, char *buf,
     }
     pclose(fp);
     return 0;
+}
+
+static void  get_opts_value(data_t *data, char **p_strtok)
+{
+    char *p;
+    int id, value;
+
+    while ((p = strtok_r(NULL, "=", p_strtok)))
+    {
+        id = atoi(p);
+        p = strtok_r(NULL, " ", p_strtok);
+        value = atoi(p);
+
+        if (id >= 0 && id < OPTIONS_NUM)
+            data->opts[id].value = value;
+    }
 }
