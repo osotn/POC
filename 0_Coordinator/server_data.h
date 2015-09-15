@@ -8,6 +8,7 @@
 #include "server_interface.h"
 
 server_event_t server_serialize(data_t *data, char *script_str, int *str_size);
-server_event_t server_deserialize(data_t *data, char *script_str, int *str_size);
+server_event_t server_deserialize(data_t *data, char *script_str,
+    int *str_size);
 
 #endif/*SERVER_DATA_H*/
