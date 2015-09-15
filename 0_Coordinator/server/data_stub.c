@@ -39,29 +39,12 @@ server_event_t server_serialize(data_t *data, char *script_str, int *str_size)
 #endif
 
     /* Output: {OK, FAILED} */
-    if (strcmp(buf, "OK\n")) /* ? Python send "OK\n" om print "OK" */
+    if (strcmp(buf, "OK\n")) /* ? Python send "OK\n" */
     {
         printf("data parser failed: %s\n", buf);
         return SERVER_ERROR;
     }
 
-    /* CFG: Translate to name */
-    if (do_cmd(CFG_VALUE2NAME_CMD, addr, opts, buf, sizeof(buf),
-        "CFG Translate values to name command"))
-    {
-        return SERVER_ERROR;
-    }
-#ifdef SERVER_DEBUG_PRINT
-    printf("Data update result: %s\n", buf);
-#endif
-
-    /* Output: {OK, FAILED} [<option_name> <option_value>] */
-    if (!(p = opts_is_valid("data parser", buf, NULL)))
-        return SERVER_ERROR;
-
-    while (*p++);
-
-    strncpy(script_str, p, *str_size);
 #ifdef SERVER_DEBUG_PRINT
     printf("Server Serialize: script = \"%s\"\n", script_str);
 #endif
