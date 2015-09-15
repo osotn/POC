@@ -11,9 +11,9 @@
 #include "../slave_data.h"
 
 #if 1
-  /* XXX TEST */
-  static struct sockaddr_in  s_addr;
-  static int32_t s_opts[OPTIONS_NUM] = {};
+    /* XXX TEST */
+    static struct sockaddr_in  s_addr;
+    static int32_t s_opts[OPTIONS_NUM] = {};
 #endif
 
 
@@ -29,7 +29,7 @@ slave_event_t slave_serialize(data_t *data, int8_t *pkg, struct sockaddr_in *add
     /* XXX TEST */
     s_addr = data->dev_addr;
     for (i = 0; i < OPTIONS_NUM; i++)
-      s_opts[i] = data->opts[i].value;
+        s_opts[i] = data->opts[i].value;
 #endif
 
     memcpy(&data->dev_addr.sin_addr, &addr->sin_addr, sizeof(struct in_addr));
@@ -56,7 +56,7 @@ slave_event_t slave_deserialize(data_t *data, int8_t *pkg, struct sockaddr_in *a
     /* XXX TEST */
     data->dev_addr = s_addr;
     for (i = 0; i < OPTIONS_NUM; i++)
-      data->opts[i].value = s_opts[i];
+        data->opts[i].value = s_opts[i];
 #else    
     memcpy(&addr->sin_addr, &data->dev_addr.sin_addr, sizeof(struct in_addr));
     
