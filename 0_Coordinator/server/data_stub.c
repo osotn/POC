@@ -11,6 +11,7 @@
 
 static int do_cmd(char *cmd_name, char *addr, char *opts, char *buf,
     int buf_size, char *print_msg);
+static char *opts_is_valid(char *print_msg, char *buf, char **p_data);
 static void get_opts_value(data_t *data, char **p_strtok);
 
 #define DATA_WRITE_CMD "python "UPDATE" --addr %s --write%s --file ./etc/data.xml"
@@ -53,16 +54,10 @@ server_event_t server_serialize(data_t *data, char *script_str, int *str_size)
 #ifdef SERVER_DEBUG_PRINT
     printf("Data update result: %s\n", buf);
 #endif
-    /* Output: {OK, FAILED} [<option_name> <option_value>]
-     */
 
-    p = strtok(buf, " ");
-
-    if (strcmp(p, "OK"))
-    {
-        printf("data parser: %s\n", buf);
+    /* Output: {OK, FAILED} [<option_name> <option_value>] */
+    if (!(p = opts_is_valid("data parser", buf, NULL)))
         return SERVER_ERROR;
-    }
 
     while (*p++);
 
@@ -81,16 +76,9 @@ server_event_t server_serialize(data_t *data, char *script_str, int *str_size)
     printf("Data update result: %s\n", buf);
 #endif
 
-    /* Output: {OK, FAILED} [<option_name> <option_value>]
-     */
-
-    p = strtok(buf, " ");
-
-    if (strcmp(p, "OK"))
-    {
-        printf("data parser: %s\n", buf);
+    /* Output: {OK, FAILED} [<option_name> <option_value>] */
+    if (!(p = opts_is_valid("data parser", buf, NULL)))
         return SERVER_ERROR;
-    }
 
     while (*p++);
 
@@ -125,15 +113,9 @@ server_event_t server_deserialize(data_t *data, char *script_str,
     printf("\tCfg parser result: %s\n", cfg_buf);
 #endif
 
-    /* Output: {OK, FAILED} <dev_ip> [id=value]
-     */
-    p = strtok_r(cfg_buf, " ", &p_cfg);
-
-    if (strcmp(p, "OK"))
-    {
-        printf("cfg parser: %s\n", cfg_buf);
+    /* Output: {OK, FAILED} <dev_ip> [id=value] */
+    if (!(p = opts_is_valid("cfg parser", cfg_buf, &p_cfg)))
         return SERVER_ERROR;
-    }
 
     /* ip address */
     p = strtok_r(NULL, " ", &p_cfg);
@@ -154,16 +136,9 @@ server_event_t server_deserialize(data_t *data, char *script_str,
 #ifdef SERVER_DEBUG_PRINT
     printf("Data update result: %s\n", data_buf);
 #endif
-
-    /* Output: {OK, FAILED} [id=value]
-     */
-    p = strtok_r(data_buf, " ", &p_data);
-
-    if (strcmp(p, "OK"))
-    {
-        printf("data parser: %s\n", data_buf);
+    /* Output: {OK, FAILED} [id=value] */
+    if (!(p = opts_is_valid("data parser", data_buf, &p_data)))
         return SERVER_ERROR;
-    }
 
     get_opts_value(data, &p_data);
 
@@ -204,7 +179,19 @@ static int do_cmd(char *cmd_name, char *addr, char *opts, char *buf,
     return 0;
 }
 
-static void  get_opts_value(data_t *data, char **p_strtok)
+static char *opts_is_valid(char *print_msg, char *buf, char **p_data)
+{
+    char *p = p_data ? strtok_r(buf, " ", p_data) : strtok(buf, " ");
+
+    if (strcmp(p, "OK"))
+    {
+        printf("%s: %s\n", print_msg, buf);
+        return NULL;
+    }
+    return p;
+}
+
+static void get_opts_value(data_t *data, char **p_strtok)
 {
     char *p;
     int id, value;
