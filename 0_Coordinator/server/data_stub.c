@@ -8,14 +8,16 @@
 
 #define UPDATE "./server/smarthome_data_update.py"
 #define PARSE "./server/smarthome_cfg_parse.py"
+#define DATA_XML "./etc/data.xml"
+#define CFG_XML "./etc/cfg.xml"
 
 static int do_cmd(char *cmd_name, char *addr, char *opts, char *buf,
     int buf_size, char *print_msg);
 static char *opts_is_valid(char *print_msg, char *buf, char **p_data);
 static void get_opts_value(data_t *data, char **p_strtok);
 
-#define DATA_WRITE_CMD "python "UPDATE" --addr %s --write%s --file ./etc/data.xml"
-#define CFG_VALUE2NAME_CMD  "python "PARSE" --addr %s%s --file ./etc/cfg.xml"
+#define DATA_WRITE_CMD "python "UPDATE" --addr %s --write%s --file "DATA_XML
+#define CFG_VALUE2NAME_CMD  "python "PARSE" --addr %s%s --file "CFG_XML
 server_event_t server_serialize(data_t *data, char *script_str, int *str_size)
 {
     int i, len;
@@ -68,8 +70,8 @@ server_event_t server_serialize(data_t *data, char *script_str, int *str_size)
     return SERVER_DATA;
 }
 
-#define CFG_NAME2VALUE_CMD  "python "PARSE" --device %s --file ./etc/cfg.xml"
-#define DATA_READ_CMD "python "UPDATE" --addr %s --file ./etc/data.xml"
+#define CFG_NAME2VALUE_CMD  "python "PARSE" --device %s --file "CFG_XML
+#define DATA_READ_CMD "python "UPDATE" --addr %s --file "DATA_XML
 server_event_t server_deserialize(data_t *data, char *script_str,
     int *str_size)
 {
