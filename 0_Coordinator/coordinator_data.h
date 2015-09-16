@@ -11,7 +11,7 @@
 #include <arpa/inet.h>
 
 #define SERVER_DEBUG_PRINT
-//#define SLAVE_DEBUG_PRINT
+#define SLAVE_DEBUG_PRINT
 
 #define OPTIONS_NUM 8
 //XXX We don't care about buffers yet, so 1000 is always more than enough
