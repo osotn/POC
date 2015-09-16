@@ -36,12 +36,13 @@ server_event_t server_serialize(data_t *data, char *script_str, int *str_size)
     {
         return SERVER_ERROR;
     }
+
 #ifdef SERVER_DEBUG_PRINT
     printf("Data update result: \"%s\"\n", buf);
 #endif
 
     /* Output: {OK, FAILED} */
-    if (strcmp(buf, "OK\n")) /* ? Python send "OK\n" */
+    if (strcmp(buf, "OK\n"))
     {
         printf("data parser failed: %s\n", buf);
         return SERVER_ERROR;
@@ -53,6 +54,7 @@ server_event_t server_serialize(data_t *data, char *script_str, int *str_size)
     {
         return SERVER_ERROR;
     }
+
 #ifdef SERVER_DEBUG_PRINT
     printf("Data update result: %s\n", buf);
 #endif
@@ -64,9 +66,11 @@ server_event_t server_serialize(data_t *data, char *script_str, int *str_size)
     while (*p++);
 
     strncpy(script_str, p, *str_size);
+
 #ifdef SERVER_DEBUG_PRINT
     printf("Server Serialize: script = \"%s\"\n", script_str);
 #endif
+
     return SERVER_DATA;
 }
 
@@ -117,6 +121,7 @@ server_event_t server_deserialize(data_t *data, char *script_str,
 #ifdef SERVER_DEBUG_PRINT
     printf("Data update result: %s\n", data_buf);
 #endif
+
     /* Output: {OK, FAILED} [id=value] */
     if (!(p = opts_is_valid("data parser", data_buf, &p_data)))
         return SERVER_ERROR;
@@ -129,6 +134,7 @@ server_event_t server_deserialize(data_t *data, char *script_str,
 #ifdef SERVER_DEBUG_PRINT
     data_print("Server Deserialize:", data);
 #endif
+
     return SERVER_DATA;
 }
 
@@ -142,9 +148,11 @@ static int do_cmd(char *cmd_name, char *addr, char *opts, char *buf,
         snprintf(cmd, sizeof(cmd), cmd_name, addr, opts);
     else
         snprintf(cmd, sizeof(cmd), cmd_name, opts);
+
 #ifdef SERVER_DEBUG_PRINT
     printf("%s: %s\n", print_msg, cmd);
 #endif
+
     if (!(fp = popen(cmd, "r")))
     {
         perror("Error in popen\n");
