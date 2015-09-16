@@ -7,6 +7,8 @@
 
 #include "coordinator_data.h"
 
+/* TODO Separate error types
+ */
 typedef enum {
     SERVER_DATA,
     SERVER_ERROR,

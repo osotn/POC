@@ -8,8 +8,6 @@
 static slave_serialize_cb_t serialize_cb;
 static slave_deserialize_cb_t deserialize_cb;
 
-#define PKG_LEN (OPTIONS_NUM * sizeof(int32_t))
-
 slave_event_t slave_update(data_t *command, data_t *answer)
 {
     struct timeval timeout = {
@@ -18,10 +16,10 @@ slave_event_t slave_update(data_t *command, data_t *answer)
     };
     struct sockaddr_in dev_addr = {
         .sin_family = AF_INET,
-        .sin_port = htons(5005),
+        .sin_port = htons(PORT_SLAVE),
     };
-    int8_t pkg[PKG_LEN] = {};
-    int len = PKG_LEN, addr_len = sizeof(struct sockaddr_in);
+    int8_t pkg[OPTIONS_NUM * sizeof(int32_t)] = {};
+    int len = sizeof(pkg), addr_len = sizeof(struct sockaddr_in);
     int sockfd;
     
     if (!serialize_cb || !deserialize_cb)

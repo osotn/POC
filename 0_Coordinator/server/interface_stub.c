@@ -11,13 +11,9 @@ int server_run(server_handle_cb_t handle_cb, server_serialize_cb_t serialize_cb,
 {
     int i = 0;
     struct sockaddr_in client_addr = {},
-    /* XXX To test: ncat -vv localhost port -u
-     * or
-     * python server/smarthome_dummy_msg.py
-     */
     serv_addr = {
         .sin_family = AF_INET,
-        .sin_port = htons(4000),
+        .sin_port = htons(PORT_MASTER),
         .sin_addr.s_addr = htonl(INADDR_LOOPBACK)
     };
     int sockfd, enable = 1, len, addr_len = sizeof(struct sockaddr_in);
@@ -62,6 +58,8 @@ int server_run(server_handle_cb_t handle_cb, server_serialize_cb_t serialize_cb,
         printf("%d. Server_interface Stub: Received cmd from server:\n", i++);
         printf("\t cmd = \"%s\"\n", cmd_script_str);
 #endif
+        /* TODO Handle handle_cb return value
+         */
         event = deserialize_cb(&cmd, cmd_script_str, &script_str_len);
         handle_cb(event, &cmd, &answer);
         event = serialize_cb(&answer, answer_script_str, &size);

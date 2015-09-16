@@ -17,17 +17,18 @@
 //XXX We don't care about buffers yet, so 1000 is always more than enough
 #define BUF_TMP_SIZE 1000
 
+#define PORT_SLAVE 5005
+#define PORT_MASTER 4000
+
 // XXX Do we need struct? Probably yes.
 #if 1
-typedef struct data_opt_t
-{
+typedef struct data_opt_t {
     int32_t value;
 } data_opt_t;
 #else
 typedef int32_t data_opt_t;
 #endif
-typedef struct data_t
-{
+typedef struct data_t {
     struct sockaddr_in dev_addr;
     data_opt_t opts[OPTIONS_NUM];
 } data_t;
