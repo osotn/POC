@@ -1,7 +1,7 @@
 import socket
 import sys
 
-HOST = 'localhost'
+HOST = '0.0.0.0'
 PORT = 5005
 
 # Create a TCP/IP socket
