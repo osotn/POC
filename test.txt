@@ -1,0 +1,17 @@
+Demo test:
+
+1. Simulate the slave:
+  ifconfig  lo:0 1.1.0.20
+  python slave/smarthome_slave_echo.py &
+
+2. Run coordinator:
+  ./coordinator
+
+3. Simulate the UI request:
+  python server/smarthome_dummy_msg.py
+
+Result on UI side:
+sending "kitchen_led left on"
+received 32 bytes from ('1.1.0.20', 41788)
+sent 32 bytes back to ('1.1.0.20', 41788)
+received "left on main_light off right off"
