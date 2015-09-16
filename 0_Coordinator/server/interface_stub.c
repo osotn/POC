@@ -11,8 +11,10 @@ int server_run(server_handle_cb_t handle_cb, server_serialize_cb_t serialize_cb,
 {
     int i = 0;
     struct sockaddr_in client_addr = {},
-    /* XXX To test: ncat -vv localhost port -u*/
-    /* TODO Remove port and addr */
+    /* XXX To test: ncat -vv localhost port -u
+     * or
+     * python server/smarthome_dummy_msg.py
+     */
     serv_addr = {
         .sin_family = AF_INET,
         .sin_port = htons(4000),
@@ -29,7 +31,7 @@ int server_run(server_handle_cb_t handle_cb, server_serialize_cb_t serialize_cb,
     /* TODO We do really need reusable address ? */ 
     if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)))
     {
-        perror("Error");
+        perror("setsockopt");
         return -1;
     }
 
@@ -43,48 +45,41 @@ int server_run(server_handle_cb_t handle_cb, server_serialize_cb_t serialize_cb,
     {
         data_t cmd, answer;
         server_event_t event;
-        char cmd_script_str[1000] = {};
-        char answer_script_str[1000];
+        char cmd_script_str[BUF_TMP_SIZE] = {};
+        char answer_script_str[BUF_TMP_SIZE];
         int script_str_len, size = sizeof(answer_script_str);
 
-        // TODO test cmd from script
-#if 0
         if ((len = recvfrom(sockfd, cmd_script_str, sizeof(cmd_script_str), 0,
             (struct sockaddr *)&client_addr, (socklen_t*)&addr_len)) <= 0)
         {
             if (len < 0)
-                error("recv");
+                error("recvfrom");
         }
-#else
-        strcpy(cmd_script_str, "kitchen_led left on");
-#endif
+
         script_str_len = strlen(cmd_script_str) + 1;
+
 #ifdef SERVER_DEBUG_PRINT
         printf("%d. Server_interface Stub: Received cmd from server:\n", i++);
         printf("\t cmd = \"%s\"\n", cmd_script_str);
 #endif
         event = deserialize_cb(&cmd, cmd_script_str, &script_str_len);
-
         handle_cb(event, &cmd, &answer);
-
         event = serialize_cb(&answer, answer_script_str, &size);
+
 #ifdef SERVER_DEBUG_PRINT
         printf("Server_interface Stub: Received answer to server:\n");
         printf("\t answer = \"%s\"\n", answer_script_str);
 #endif
-        // TODO test cmd from script
-#if 0
         if ((len = sendto(sockfd, answer_script_str, sizeof(answer_script_str), 0,
             (struct sockaddr *)&client_addr, addr_len)) < 0)
         {
             perror("send");
             return 1;
         }
-#endif
+
 #ifdef SERVER_DEBUG_PRINT
         printf("---------------------------------------------------------\n\n");
 #endif
-        sleep(2);
     }
     return 0;
 }
