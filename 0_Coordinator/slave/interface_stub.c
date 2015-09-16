@@ -52,7 +52,7 @@ slave_event_t slave_update(data_t *command, data_t *answer)
         return SLAVE_NETWORK_ERROR;
     }
 
-#if 1
+#if 0
     /* XXX TEST */
     sleep(1);
 #else
