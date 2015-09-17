@@ -6,14 +6,13 @@ Iterations
 ==========
 
 #1   9/Aug/2015-26/Aug/2015 - Design Document
-#2  27/Aug/2015-12/Sep/2015 - Implement The Coordinator, POC version
-#3  14/Sep/2015-            - 
-
+#2  27/Aug/2015-16/Sep/2015 - Implement The Coordinator, POC version
+#3  17/Sep/2015-            - 
 
 
 #1 Iteration
 ------------
-Title:  Design document
+Title:  Design documenti
 Target: Design document Smart_Home/Master_demon
 
 Start:  9 Aug 2015
@@ -24,13 +23,13 @@ Demo: None
 Finish: 26 Aug 2015 (2.5 weeks (+0.5 week))
 
 Retrospective: 
-  pros: 
+  good: 
      1. Google Doc
      2. A lot ideas
      3. Discussions
-  cons:
+  bad:
      1. Long time
-     2. Don't use git
+     2. Didn't use git
      3. ...
 
 #2 Iteration
@@ -43,49 +42,74 @@ Target: Implement The Coordinator, POC version - printf, without configuration
 Start:  27 Aug 2015
 Planning Days: 2 weeks
 
-Demo: Send server command as UDP messages from "ncat" utility, simple slave stub.
+Demo: See test.txt
 
-Finish: 12 Sep 2015 (2 weeks)
+Finish: 16 Sep 2015 (3 weeks)
 
 Retrospective: 
-  pros: 
-     1. 
-     2.
-     3.
-  cons:
-     1.
-     2.
-     3.
+  good: 
+     1. Independant development
+     2. Middle speed
+     3. Good test - lo:0 
+  bad:   
+     1. Git conflict: git pull --rebase, git commit, git push 
+     2. Low quality code, draft level
+     3. Absent status field in data.xml update "Unknown/Timeout/Required" and also error answer for server
 
 
 #3 Iteration
 ------------
-Title:
-Target:
+Title: Master 1st demo: simple web, simple slave simulator
+Target: 
+**************
+1. Javascript: ajax - checkbutton led/led/led
+2.   cgi python script   ?dev=kicthen_led&left=on  -> UDP msg: "kitchen_led left on"  
+             <---- answer , update checkbutton.             
 
-Start: 14 Sep 2015
-Planning Days: ? weeks
+3. Demo -> PC & Raspberry.
+
+4. Application -> slave_simulator  (echo -- extention)
+        ---------------------------- 
+        |        ip:|1.1.0.20|     |
+        |                          |
+        |   leds:   o   *   o      | <---- Python CLI! >> 1.1.0.20 25.6
+        |                          |
+        |   temp:     |25.6|       |
+        |   >>                     |
+        ----------------------------
+**************
+
+Start: 17 Sep 2015
+Planning Days: 1 weeks
 
 Demo:
 
 Finish: ? (? weeks - +/- weeks/day)
 
 Retrospective: 
-  pros: 
+  good: 
      1. 
-     2.
-     3.
-  cons:
-     1.
-     2.
-     3.
+     2. 
+     3. 
+  bad:
+     1. 
+     2. 
+     3. 
 
 
 
+#4 Iteration
+------------
+Title: Slave design document, Alex - start, Sasha - review
 
+#5 Iteration
+------------
+Title: Raspberry slave driver SPI,  Discovery STM32  3 led, button.  
+ Demo - POC draft complete smart_home. 
 
+#6 Iteration
+-----------
+Design Doc <--- Analyse!!!
 
-
-
-
+#7 - #15 Product quality code!!!!
 
