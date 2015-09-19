@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Smart_Home</title>
+<script language="Javascript">
+// Debug
+function debug(str) {
+    document.getElementById('debug').innerHTML = str;
+}
+// This is standard example of AJAX post request from Internet
+// *** Don't change this function !!! ***
+function send_http_post(dev, read) {
+    var xmlHttpReq = false;
+    var self = this;
+    // Mozilla/Safari
+    if (window.XMLHttpRequest) {
+        self.xmlHttpReq = new XMLHttpRequest();
+    }
+    // IE
+    else if (window.ActiveXObject) {
+        self.xmlHttpReq = new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    self.xmlHttpReq.open('POST', '/cgi-bin/smarthome.py', true);
+    self.xmlHttpReq.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    self.xmlHttpReq.onreadystatechange = function() {
+        if (self.xmlHttpReq.readyState == 4) {
+            update_page(self.xmlHttpReq.responseText);
+        }
+    }
+    self.xmlHttpReq.send(get_query_string(dev, read));
+    
+    // XXX Debug
+    debug("Send post");
+}
+
+function get_opts_query(dev) {
+    var form = document.forms[dev];
+    qstr = '';
+    switch (dev)
+    {
+    case 'kitchen_led':
+        qstr += '&left=';
+        qstr += (document.forms[dev].left.checked)  ? 'on' : 'off'; 
+        qstr += '&main=';
+        qstr += (document.forms[dev].main.checked)  ? 'on' : 'off';
+        qstr += '&right=';
+        qstr += (document.forms[dev].right.checked) ? 'on' : 'off';
+        break;
+
+    case 'kitchen_t_sensor':
+        // None
+        break;
+
+    // TO ADD new devices
+    //   case "new_device" 
+    //   break;
+    }
+
+    return qstr;
+}
+
+// Cgi queries
+function get_query_string(dev, read) {
+    var qstr = 'dev=' + dev;
+
+    // XXX Debug
+    debug("qet_query_string");
+
+    if (!read) {
+        qstr += get_opts_query(dev);
+    }
+    document.getElementById("send").innerHTML = qstr;
+    return qstr;
+}
+
+function update_device(dev, str) {
+    var opt, value;
+    var pos = 0, i = 0;
+    var form = document.forms[dev];
+
+    switch (dev)
+    {
+    case 'kitchen_led':
+        while (true) {
+            pos = str.indexOf(' ', i);
+            opt = str.slice(i, pos);
+            if (pos == -1) {
+                break;
+            }
+            i = pos + 1;
+            pos = str.indexOf(' ', i); 
+            value = str.slice(i, (pos == -1) ? str.length : pos);
+
+            // XXX Debug
+            debug(value); 
+
+            switch (opt) {
+            case 'left':
+                form.left.checked  = (value == 'off') ? false : true;
+                break;
+            case 'main':
+                form.main.checked  = (value == 'off') ? false : true;
+                break;
+            case 'right':
+                form.right.checked = (value == 'off') ? false : true;
+                break;
+            }
+
+            if (pos == -1) {
+                break;
+            }
+            i = pos + 1;
+        }
+        break;
+
+    case 'kitchen_t_sensor':
+        pos = str.indexOf(' ', i);
+        opt = str.slice(i, pos);
+        if ((pos == -1) || (opt != 't')) {
+            break;
+        }
+        i = pos + 1;
+        pos = str.indexOf(' ', i);
+        value = str.slice(i, (pos == -1) ? str.length : pos);
+
+        // XXX debug
+        debug(value);
+
+        document.getElementById('kitchen_temperature').innerHTML = value;
+        break;
+
+    // TO ADD new devices
+    //   case "new_device" 
+    //   break;
+    }
+}
+
+function update_page(str) {
+    document.getElementById("result").innerHTML = str;
+    var pos = str.indexOf(' ');
+    if (pos != -1) {
+        var dev = str.slice(0, pos);
+
+        // XXX Debug
+        debug(dev);
+
+        update_device(dev, str.slice(pos + 1));
+    }
+}
+</script>
+</head>
+
+<body>
+<form name="kitchen_led"> 
+    <p><b>Kitchen_led</b> device:</p>
+    <input type="checkbox" name="left"  onclick='JavaScript:send_http_post("kitchen_led", false)'>left </input>
+    <input type="checkbox" name="main"  onclick='JavaScript:send_http_post("kitchen_led", false)'>main </input>
+    <input type="checkbox" name="right" onclick='JavaScript:send_http_post("kitchen_led", false)'>right </input>
+    <input value="read"   type="button" onclick='JavaScript:send_http_post("kitchen_led", true)' />
+</form>
+<form name="kitchen_t_sensor">
+    <p><b>Kitchen_t_sensor</b> device:</p>
+    <input value="read" type="button" onclick='JavaScript:send_http_post("kitchen_t_sensor", true)' />
+</form>
+    t: <label id="kitchen_temperature">__</label> С
+
+<hr />
+<p>
+    Send: <label id='send'></label><br />
+    Recv: <label id="result"></label><br />
+    Debug: <label id="debug"></label>
+</p>
+
+</body>
+</html>
