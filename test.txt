@@ -1,17 +1,30 @@
 Demo test:
 
-1. Simulate the slave:
-  ifconfig  lo:0 1.1.0.20
-  python slave/smarthome_slave_echo.py &
+1. Run slave simulator:
+  sudo ifconfig  lo:0 1.1.20.1
+  sudo ifconfig  lo:0 submask 255.255.255.0
+  sudo ifconfig  lo:1 1.1.10.1
+  sudo ifconfig  lo:1 submask 255.255.255.0
 
-2. Run coordinator:
+  btw, to delete a alias run "sudo ifconfig lo:0 down"
+
+  python 0_slave_simulation/slave_simulation.py
+
+  btw, Tkinter must be installed, if not run "sudo apt-get install python-tk"
+
+  result: Simulation window appears on Desktop
+
+2. Run coordinator from "0_Coordinator":
   ./coordinator
 
-3. Simulate the UI request:
-  python server/smarthome_dummy_msg.py
+3. Run web UI:
 
-Result on UI side:
-sending "kitchen_led left on"
-received 32 bytes from ('1.1.0.20', 41788)
-sent 32 bytes back to ('1.1.0.20', 41788)
-received "left on main_light off right off"
+   # Copy html/script files to local web-server folder, e.g., for apache2:
+   cp 0_www/index.html ~/htdocs
+   cp 0_www/smarthome.py ~/htdocs/cgi-bin
+
+   In browser (Chrome) input URL: "localhost/index.html"
+
+   result: Web UI opens in browser
+
+See Screenshot_demo.png
