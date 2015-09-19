@@ -18,5 +18,4 @@ int data_print(char *msg_line, data_t *data)
 
     printf("=========================\n");
     return 0;
-
 }

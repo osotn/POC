@@ -13,7 +13,13 @@ static int handler(server_event_t event, data_t *command, data_t *answer)
 
     if (event == SERVER_DATA)
     {
-        return slave_update(command, answer);
+        slave_event_t slave_event = slave_update(command, answer);
+
+        if (slave_event != SLAVE_DATA)
+        {
+            /* XXX Error message */
+            return -1;
+        }
     }
 
     return 0;

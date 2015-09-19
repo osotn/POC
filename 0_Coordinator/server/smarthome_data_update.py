@@ -31,7 +31,7 @@ if args.write is None:
   # READ
   if the_slave is None:
     result = "FAILED IP address %s is absent in %s" % (args.addr, args.file)
-    print result; sys.exit(1)
+    sys.stdout.write(result); sys.exit(1)
 
   options = the_slave.findall('opt')
   # format: [<opt_id>=<opt_value>]
@@ -59,4 +59,4 @@ else:
   
   tree.write(args.file)
     
-print (result); sys.exit(0)
+sys.stdout.write(result)

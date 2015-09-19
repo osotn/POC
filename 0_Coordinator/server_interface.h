@@ -10,8 +10,8 @@
 /* TODO Separate error types
  */
 typedef enum {
-    SERVER_DATA,
-    SERVER_ERROR,
+    SERVER_DATA = 0,
+    SERVER_ERROR = 1,
 } server_event_t;
  
 /* Callbacks */

@@ -61,14 +61,29 @@ int server_run(server_handle_cb_t handle_cb, server_serialize_cb_t serialize_cb,
         /* TODO Handle handle_cb return value
          */
         event = deserialize_cb(&cmd, cmd_script_str, &script_str_len);
-        handle_cb(event, &cmd, &answer);
-        event = serialize_cb(&answer, answer_script_str, &size);
+
+        if (event != SERVER_DATA)
+        {
+           strcpy(answer_script_str, "ERROR: bad command");
+        }
+        else
+        {
+             if (!handle_cb(event, &cmd, &answer))
+             {
+                 /* XXX check internal error */
+                 serialize_cb(&answer, answer_script_str, &size);
+             }
+             else
+             {
+                 strcpy(answer_script_str, "ERROR: not connection to the device");
+             }
+        }
 
 #ifdef SERVER_DEBUG_PRINT
         printf("Server_interface Stub: Received answer to server:\n");
         printf("\t answer = \"%s\"\n", answer_script_str);
 #endif
-        if ((len = sendto(sockfd, answer_script_str, sizeof(answer_script_str), 0,
+        if ((len = sendto(sockfd, answer_script_str, strlen(answer_script_str), 0,
             (struct sockaddr *)&client_addr, addr_len)) < 0)
         {
             perror("send");

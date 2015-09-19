@@ -42,11 +42,8 @@ server_event_t server_serialize(data_t *data, char *script_str, int *str_size)
 #endif
 
     /* Output: {OK, FAILED} */
-    if (strcmp(buf, "OK\n"))
-    {
-        printf("data parser failed: %s\n", buf);
+    if (!(p = opts_is_valid("data update failed", buf, NULL)))
         return SERVER_ERROR;
-    }
 
     /* CFG: Translate to name */
     if (do_cmd(CFG_VALUE2NAME_CMD, addr, opts, buf, sizeof(buf),

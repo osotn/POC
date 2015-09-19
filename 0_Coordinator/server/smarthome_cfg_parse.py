@@ -29,7 +29,7 @@ devices = root.findall('device')
 #  2. OK [<option_name> <option_value_name>]
 
 if (args.device is None and args.addr is None) or (args.device is not None and args.addr is not None):
-  result = "FAILED Define neither 'device' or 'addr' option"
+  sys.stdout.write("FAILED Define neither 'device' or 'addr' option")
   sys.exit(1)
    
 name2value = True
@@ -62,13 +62,13 @@ for device in devices:
 
 if the_device is None:
   result = "FAILED Device %s is absent in %s" % (device_id, args.file)
-  print result; sys.exit(1)
+  sys.stdout.write(result); sys.exit(1)
 
 if name2value:
   ip = the_device.attrib['ip']
   if ip is None:
     result = "FAILED IP is absent for device %s in %s" % (device_id, args.file)
-    print result; sys.exit(1)
+    sys.stdout.write(result); sys.exit(1)
   
   result += " %s" % (ip) 
 
@@ -87,26 +87,34 @@ for i in range(0, len(args_opts), 2):
   option_out = opt.attrib[opt_out]
   if option_out is None:
     result = "FAILED Tag '%s is absent for option %s of device %s in %s" % (opt_out, option_in, device_id, args.file)
-    print result; sys.exit(1)
+    sys.stdout.write(result); sys.exit(1)
+
   # value
   opt_values = {}
-  values = opt.find("values")
-  for k in values.attrib:
-    if name2value:
-      opt_values[k] = values.attrib[k]
-    else:
-      opt_values[values.attrib[k]] = k
+  values = None
+  if opt.attrib['type'] == 'enum':
+    values = opt.find("values")
+    for k in values.attrib:
+      if name2value:
+        opt_values[k] = values.attrib[k]
+      else:
+        opt_values[values.attrib[k]] = k
 
   if (i+1) >= len(args_opts):
     result = "FAILED Option without value"
-    print result; sys.exit(1)
+    sys.stdout.write(result); sys.exit(1)
 
   value_in = args_opts[i+1]
-  if not value_in in opt_values:
-    result = "FAILED Value %s is absent in option %s for device %s in %s" % (value_in, option_out, device_id, args.file)
-    print result; sys.exit(1)
+  if values is not None:
+    if not value_in in opt_values:
+      result = "FAILED Value %s is absent in option %s for device %s in %s" % (value_in, option_out, device_id, args.file)
+      sys.stdout.write(result); sys.exit(1)
 
-  value = opt_values[value_in]
+  if values is not None:
+    value = opt_values[value_in]
+  else:
+    value = value_in
+
   result += " %s%s%s" % (option_out, token, value)
   
-print result; sys.exit(0)
+sys.stdout.write(result)

@@ -4,24 +4,27 @@
  */
 
 #include <string.h>
+#include <netinet/in.h>
 #include "../slave_data.h"
 
 /* Serialize: "data" to "pkg" */
 slave_event_t slave_serialize(data_t *data, int8_t *pkg, struct sockaddr_in *addr)
 {
     int i;
-    size_t opt_value_size = sizeof(data->opts->value);
 
 #ifdef SLAVE_DEBUG_PRINT
     printf("Slave Serialize: data\n");
+    data_print(">>", data);
 #endif
 
     memcpy(&addr->sin_addr, &data->dev_addr.sin_addr, sizeof(struct in_addr));
 
     for (i = 0; i < OPTIONS_NUM; i++)
     {
-        memcpy(pkg, &data->opts[i].value, opt_value_size);
-        pkg += opt_value_size;
+        /* Send values in network byte-order */
+        uint32_t value = htonl(data->opts[i].value);
+        memcpy(pkg, &value, sizeof(value));
+        pkg += sizeof(value);
     }
 
 #ifdef SLAVE_DEBUG_PRINT
@@ -35,7 +38,6 @@ slave_event_t slave_serialize(data_t *data, int8_t *pkg, struct sockaddr_in *add
 slave_event_t slave_deserialize(data_t *data, int8_t *pkg, struct sockaddr_in *addr)
 {
     int i;
-    size_t opt_value_size = sizeof(data->opts->value);
 
 #ifdef SLAVE_DEBUG_PRINT
     printf("Slave Deserialize: pkg \n");
@@ -45,8 +47,14 @@ slave_event_t slave_deserialize(data_t *data, int8_t *pkg, struct sockaddr_in *a
 
     for (i = 0; i < OPTIONS_NUM; i++)
     {
-        memcpy(&data->opts[i].value, pkg, opt_value_size);
-        pkg += opt_value_size;
+        uint32_t value;
+
+        memcpy(&value, pkg, sizeof(value));
+
+        /* Translate from network to host byte-order */
+        data->opts[i].value = ntohl(value);
+
+        pkg += sizeof(value);
     }
 
 #ifdef SLAVE_DEBUG_PRINT
