@@ -127,7 +127,7 @@ left  = tk.Checkbutton(frame, text = "left", variable = kitchen_led_left)
 left.pack(side = tk.LEFT)
 main  = tk.Checkbutton(frame, text = "main", variable = kitchen_led_main)
 main.pack(side = tk.LEFT)
-right = tk.Checkbutton(frame, text = "right", variable = kitchen_led_left)
+right = tk.Checkbutton(frame, text = "right", variable = kitchen_led_right)
 right.pack(side = tk.LEFT)
 
 ###
